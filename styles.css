@@ -455,7 +455,7 @@ section.visible {
 /* Responsive */
 @media (max-width: 768px) {
   .nav-links {
-    display: none; /* Or implement a hamburger menu */
+    display: none;
   }
 
   .hero-content h1 {
