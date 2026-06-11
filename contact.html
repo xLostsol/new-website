@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contact — Joseph Bressani</title>
+    <title>Contact | Joseph Bressani</title>
     <meta
       name="description"
       content="Get in touch with Joseph Bressani via email, LinkedIn, or GitHub."
     />
     <meta name="theme-color" content="#060612" />
-    <meta property="og:title" content="Contact — Joseph Bressani" />
+    <meta property="og:title" content="Contact | Joseph Bressani" />
     <meta
       property="og:description"
       content="Get in touch via email, LinkedIn, or GitHub."
@@ -28,12 +28,21 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script>
-      document.documentElement.classList.add("js");
+      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <div id="space-background" aria-hidden="true"></div>
+    <div id="space-background" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="sun"></div>
+      <div class="black-hole">
+        <span class="bh-glow"></span>
+        <span class="bh-ring"></span>
+        <span class="bh-core"></span>
+        <span class="bh-disk"></span>
+      </div>
+    </div>
 
     <header id="navbar">
       <nav class="nav-container" aria-label="Primary">
@@ -134,7 +143,6 @@
           </div>
 
           <div class="cta-container">
-            <p>Want to learn more about my background and projects?</p>
             <div>
               <a href="projects.html" class="cta-button">View My Projects</a>
               <a href="experience.html" class="cta-button secondary"
@@ -171,5 +179,6 @@
     </footer>
 
     <script src="script.js" defer></script>
+    <script type="module" src="galaxy3d.js"></script>
   </body>
 </html>

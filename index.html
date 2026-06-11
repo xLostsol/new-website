@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Joseph Bressani — Computer Engineering Student</title>
+    <title>Joseph Bressani | Computer Engineering Student</title>
     <meta
       name="description"
-      content="Joseph Bressani — Computer Engineering student at the University of South Florida and Data Solutions Intern at DTCC. Projects, experience, and contact."
+      content="Joseph Bressani, a Computer Engineering student at the University of South Florida and Data Solutions Intern at DTCC. Projects, experience, and contact."
     />
     <meta name="theme-color" content="#060612" />
-    <meta property="og:title" content="Joseph Bressani — Portfolio" />
+    <meta property="og:title" content="Joseph Bressani | Portfolio" />
     <meta
       property="og:description"
       content="Computer Engineering student at USF and Data Solutions Intern at DTCC."
@@ -28,12 +28,21 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script>
-      document.documentElement.classList.add("js");
+      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <div id="space-background" aria-hidden="true"></div>
+    <div id="space-background" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="sun"></div>
+      <div class="black-hole">
+        <span class="bh-glow"></span>
+        <span class="bh-ring"></span>
+        <span class="bh-core"></span>
+        <span class="bh-disk"></span>
+      </div>
+    </div>
 
     <header id="navbar">
       <nav class="nav-container" aria-label="Primary">
@@ -81,13 +90,6 @@
               <span class="stat-label">Expected Graduation</span>
             </li>
           </ul>
-          <div class="intro-text">
-            <p>
-              I like building things end to end &mdash; working with data at
-              DTCC, running a virtualized homelab, publishing a Roblox game,
-              and shipping responsive websites like this one.
-            </p>
-          </div>
           <div class="cta-buttons">
             <a href="projects.html" class="cta-button">View My Projects</a>
             <a href="contact.html" class="cta-button secondary">Get in Touch</a>
@@ -121,5 +123,6 @@
     </footer>
 
     <script src="script.js" defer></script>
+    <script type="module" src="galaxy3d.js"></script>
   </body>
 </html>

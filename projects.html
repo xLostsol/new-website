@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projects — Joseph Bressani</title>
+    <title>Projects | Joseph Bressani</title>
     <meta
       name="description"
-      content="Projects by Joseph Bressani — Sky Slam (a published Roblox game), homelab infrastructure, web development, and server administration."
+      content="Projects by Joseph Bressani: Sky Slam (a published Roblox game), homelab infrastructure, web development, and server administration."
     />
     <meta name="theme-color" content="#060612" />
-    <meta property="og:title" content="Projects — Joseph Bressani" />
+    <meta property="og:title" content="Projects | Joseph Bressani" />
     <meta
       property="og:description"
       content="Sky Slam (Roblox), homelab infrastructure, web development, and more."
@@ -28,12 +28,21 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script>
-      document.documentElement.classList.add("js");
+      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <div id="space-background" aria-hidden="true"></div>
+    <div id="space-background" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="sun"></div>
+      <div class="black-hole">
+        <span class="bh-glow"></span>
+        <span class="bh-ring"></span>
+        <span class="bh-core"></span>
+        <span class="bh-disk"></span>
+      </div>
+    </div>
 
     <header id="navbar">
       <nav class="nav-container" aria-label="Primary">
@@ -126,7 +135,7 @@
                 >
               </div>
               <p>
-                This site &mdash; a fully responsive portfolio built with
+                This site: a fully responsive portfolio built with
                 vanilla HTML, CSS, and JavaScript. Deployed on GitHub Pages
                 with a custom domain and version-controlled through Git.
               </p>
@@ -158,10 +167,6 @@
           </div>
 
           <div class="cta-container">
-            <p>
-              Interested in learning more about my work or discussing potential
-              collaborations?
-            </p>
             <div>
               <a href="contact.html" class="cta-button">Contact Me</a>
               <a href="experience.html" class="cta-button secondary"
@@ -198,5 +203,6 @@
     </footer>
 
     <script src="script.js" defer></script>
+    <script type="module" src="galaxy3d.js"></script>
   </body>
 </html>

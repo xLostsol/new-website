@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Joseph Bressani — Portfolio
+   Joseph Bressani | Portfolio
    ========================================================================== */
 
 /* ----- Design tokens ----- */
@@ -89,9 +89,33 @@ h3 {
   z-index: -1;
   overflow: hidden;
   background:
-    radial-gradient(55% 45% at 18% 18%, rgba(102, 126, 234, 0.14), transparent 65%),
-    radial-gradient(45% 40% at 82% 72%, rgba(118, 75, 162, 0.12), transparent 65%),
+    radial-gradient(55% 45% at 18% 18%, rgba(102, 126, 234, 0.16), transparent 65%),
+    radial-gradient(45% 40% at 82% 72%, rgba(118, 75, 162, 0.14), transparent 65%),
+    radial-gradient(30% 26% at 72% 12%, rgba(56, 189, 248, 0.08), transparent 70%),
+    radial-gradient(36% 32% at 28% 88%, rgba(217, 70, 160, 0.07), transparent 70%),
     var(--bg);
+  transition: transform 0.45s ease;
+}
+
+/* Oversized square so the slow rotation never exposes edges */
+.stars {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150vmax;
+  height: 150vmax;
+  margin: -75vmax 0 0 -75vmax;
+  animation: starfield-rotate 420s linear infinite;
+}
+
+/* WebGL galaxy canvas (home page only); it replaces the static stars */
+.space-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+#space-background.has-canvas .stars {
+  display: none;
 }
 
 .star {
@@ -106,6 +130,134 @@ h3 {
 .star-bright {
   box-shadow: 0 0 6px 1px rgba(214, 222, 255, 0.55);
 }
+
+/* Celestial bodies drift to a new spot on each page */
+.sun,
+.black-hole {
+  position: absolute;
+  transition: left 1.2s cubic-bezier(0.45, 0.05, 0.3, 1),
+    top 1.2s cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+
+/* The sun: hot core with a breathing corona */
+.sun {
+  left: 8%;
+  top: 68%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 40% 35%,
+    #fff9e6,
+    #ffd27a 45%,
+    #ff9d3f 75%,
+    rgba(255, 120, 40, 0.6)
+  );
+  box-shadow:
+    0 0 30px 8px rgba(255, 190, 90, 0.45),
+    0 0 90px 30px rgba(255, 150, 60, 0.2);
+  opacity: 0.8;
+}
+
+.sun::after {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 190, 100, 0.32), transparent 70%);
+  animation: sun-breathe 6s ease-in-out infinite alternate;
+}
+
+/* Interstellar-style black hole: dark sphere, lensed photon ring,
+   and an edge-on accretion disk crossing in front */
+.black-hole {
+  left: 76%;
+  top: 10%;
+  width: 200px;
+  height: 200px;
+  opacity: 0.85;
+}
+
+.bh-glow {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 190, 130, 0.16), transparent 65%);
+}
+
+.bh-ring {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: conic-gradient(
+    rgba(255, 246, 228, 0.95),
+    rgba(255, 195, 125, 0.4) 90deg,
+    rgba(255, 246, 228, 0.18) 180deg,
+    rgba(255, 195, 125, 0.4) 270deg,
+    rgba(255, 246, 228, 0.95)
+  );
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent 82%,
+    #000 87%,
+    #000 95%,
+    transparent 100%
+  );
+  mask: radial-gradient(
+    closest-side,
+    transparent 82%,
+    #000 87%,
+    #000 95%,
+    transparent 100%
+  );
+  filter: blur(1.5px);
+}
+
+.bh-core {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #050308, #000 70%);
+  box-shadow: inset 0 0 25px 8px #000;
+}
+
+.bh-disk {
+  position: absolute;
+  left: -40%;
+  right: -40%;
+  top: 45%;
+  height: 10%;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 150, 70, 0),
+    rgba(255, 180, 110, 0.85) 18%,
+    #fff7e8 50%,
+    rgba(255, 180, 110, 0.85) 82%,
+    rgba(255, 150, 70, 0)
+  );
+  box-shadow: 0 0 16px 4px rgba(255, 170, 100, 0.4);
+  filter: blur(2px);
+  transform: rotate(-3deg);
+  animation: disk-glow 5s ease-in-out infinite alternate;
+}
+
+/* Per-page choreography: the black hole travels right-to-left through the
+   site while the sun travels left-to-right and the galaxy wanders */
+html[data-page="0"] .black-hole { left: 76%; top: 10%; }
+html[data-page="0"] .sun { left: 8%; top: 68%; }
+
+html[data-page="1"] .black-hole { left: 58%; top: 16%; }
+html[data-page="1"] .sun { left: 26%; top: 72%; }
+
+html[data-page="2"] .black-hole { left: 40%; top: 9%; }
+html[data-page="2"] .sun { left: 46%; top: 68%; }
+
+html[data-page="3"] .black-hole { left: 20%; top: 15%; }
+html[data-page="3"] .sun { left: 66%; top: 72%; }
+
+html[data-page="4"] .black-hole { left: 3%; top: 10%; }
+html[data-page="4"] .sun { left: 81%; top: 64%; }
 
 /* ----- Navigation ----- */
 #navbar {
@@ -223,7 +375,24 @@ h3 {
 }
 
 .hero-content {
+  position: relative;
+  z-index: 0;
   max-width: 50rem;
+}
+
+/* Dark halo behind the hero text so it stays readable over the galaxy */
+.hero-content::before {
+  content: "";
+  position: absolute;
+  inset: -34% -40%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse closest-side,
+    rgba(6, 6, 18, 0.94),
+    rgba(6, 6, 18, 0.7) 70%,
+    transparent 100%
+  );
 }
 
 .hero-content > * {
@@ -644,6 +813,98 @@ html.js .reveal.visible {
   transform: translateY(0);
 }
 
+/* ----- Card-deck page transitions ----- */
+html.page-exit-forward main,
+html.page-exit-back main,
+html[data-enter] main {
+  transform-origin: 50% 100%;
+}
+
+html.page-exit-forward main {
+  animation: card-out-left 0.35s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+
+html.page-exit-back main {
+  animation: card-out-right 0.35s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+
+html[data-enter="forward"] main {
+  animation: card-in-right 0.55s cubic-bezier(0.18, 0.85, 0.3, 1) both;
+}
+
+html[data-enter="back"] main {
+  animation: card-in-left 0.55s cubic-bezier(0.18, 0.85, 0.3, 1) both;
+}
+
+/* The universe swirls slightly as pages change */
+html.page-exit-forward #space-background {
+  transform: rotate(2deg) scale(1.1);
+}
+
+html.page-exit-back #space-background {
+  transform: rotate(-2deg) scale(1.1);
+}
+
+html[data-enter="forward"] #space-background {
+  animation: bg-settle-forward 0.7s ease both;
+}
+
+html[data-enter="back"] #space-background {
+  animation: bg-settle-back 0.7s ease both;
+}
+
+@keyframes card-out-left {
+  to {
+    opacity: 0;
+    transform: translateX(-115%) rotate(-7deg);
+  }
+}
+
+@keyframes card-out-right {
+  to {
+    opacity: 0;
+    transform: translateX(115%) rotate(7deg);
+  }
+}
+
+@keyframes card-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(72%) translateY(3%) rotate(5deg) scale(0.94);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+@keyframes card-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-72%) translateY(3%) rotate(-5deg) scale(0.94);
+  }
+  55% {
+    opacity: 1;
+  }
+}
+
+@keyframes bg-settle-forward {
+  from {
+    transform: rotate(-2deg) scale(1.1);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes bg-settle-back {
+  from {
+    transform: rotate(2deg) scale(1.1);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /* ----- Animations ----- */
 @keyframes rise {
   from {
@@ -662,6 +923,32 @@ html.js .reveal.visible {
   }
   to {
     opacity: var(--star-opacity, 0.6);
+  }
+}
+
+@keyframes starfield-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes disk-glow {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sun-breathe {
+  from {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.1);
+    opacity: 1;
   }
 }
 
@@ -749,6 +1036,18 @@ html.js .reveal.visible {
     flex-direction: column;
     justify-content: center;
     text-align: center;
+  }
+
+  .black-hole {
+    width: 120px;
+    height: 120px;
+    opacity: 0.6;
+  }
+
+  .sun {
+    width: 80px;
+    height: 80px;
+    opacity: 0.65;
   }
 }
 

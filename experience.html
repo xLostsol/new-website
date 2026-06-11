@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Experience — Joseph Bressani</title>
+    <title>Experience | Joseph Bressani</title>
     <meta
       name="description"
       content="Work experience of Joseph Bressani, including his role as Data Solutions Intern at DTCC in Tampa, FL."
     />
     <meta name="theme-color" content="#060612" />
-    <meta property="og:title" content="Experience — Joseph Bressani" />
+    <meta property="og:title" content="Experience | Joseph Bressani" />
     <meta
       property="og:description"
       content="Data Solutions Intern at DTCC and more."
@@ -28,12 +28,21 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script>
-      document.documentElement.classList.add("js");
+      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <div id="space-background" aria-hidden="true"></div>
+    <div id="space-background" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="sun"></div>
+      <div class="black-hole">
+        <span class="bh-glow"></span>
+        <span class="bh-ring"></span>
+        <span class="bh-core"></span>
+        <span class="bh-disk"></span>
+      </div>
+    </div>
 
     <header id="navbar">
       <nav class="nav-container" aria-label="Primary">
@@ -77,24 +86,6 @@
               </div>
               <p class="role-meta"><strong>DTCC</strong> &middot; Tampa, FL</p>
               <p class="year">June 2026 &ndash; Present</p>
-              <ul class="role-list">
-                <li>
-                  Work with the Data Solutions team to support data products
-                  and services used across global financial markets
-                </li>
-                <li>
-                  Assist with data analysis, validation, and reporting
-                  workflows across large financial datasets
-                </li>
-                <li>
-                  Query and transform data to support team deliverables and
-                  data quality initiatives
-                </li>
-                <li>
-                  Collaborate with cross-functional teams in an enterprise
-                  Agile environment
-                </li>
-              </ul>
             </article>
 
             <article class="card reveal">
@@ -129,7 +120,6 @@
           </div>
 
           <div class="cta-container">
-            <p>Curious about what I've built outside of work?</p>
             <div>
               <a href="projects.html" class="cta-button">View My Projects</a>
               <a href="contact.html" class="cta-button secondary">Get in Touch</a>
@@ -164,5 +154,6 @@
     </footer>
 
     <script src="script.js" defer></script>
+    <script type="module" src="galaxy3d.js"></script>
   </body>
 </html>
