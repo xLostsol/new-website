@@ -557,15 +557,19 @@ h3 {
   height: 1.5rem;
 }
 
-.contact-link {
+.contact-link,
+.contact-pill {
   color: var(--text);
   text-decoration: none;
   font-weight: 500;
   padding: 0.45rem 1.1rem;
   background: var(--accent-soft);
   border-radius: var(--radius-pill);
-  transition: background 0.25s ease, transform 0.25s ease;
   word-break: break-word;
+}
+
+.contact-link {
+  transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .contact-link:hover {
