@@ -241,47 +241,47 @@ h3 {
   animation: disk-glow 5s ease-in-out infinite alternate;
 }
 
-/* Event horizon: pure black shadow with a thin hot rim */
+/* Event horizon: pure black shadow, no rim so the ring floats free */
 .bh-core {
   position: absolute;
   inset: 13%;
   border-radius: 50%;
   background: radial-gradient(circle at 40% 36%, #0a0712, #010103 60%);
   box-shadow:
-    0 0 0 1px rgba(255, 236, 210, 0.5),
-    0 0 14px 4px rgba(255, 195, 125, 0.4),
-    0 0 48px 12px rgba(255, 160, 80, 0.16),
+    0 0 14px 4px rgba(255, 195, 125, 0.2),
+    0 0 48px 12px rgba(255, 160, 80, 0.1),
     inset 0 0 28px 10px #000;
 }
 
-/* Lensed photon ring hugging the shadow, brightest at the top */
+/* Hollow photon ring: a thin circle of light separated from the shadow
+   by a dark gap */
 .bh-ring {
   position: absolute;
-  inset: 7%;
+  inset: 2%;
   border-radius: 50%;
   background: conic-gradient(
     rgba(255, 250, 238, 1),
-    rgba(255, 205, 140, 0.55) 70deg,
-    rgba(255, 250, 238, 0.25) 150deg,
-    rgba(255, 205, 140, 0.3) 200deg,
-    rgba(255, 250, 238, 0.6) 290deg,
+    rgba(255, 205, 140, 0.7) 70deg,
+    rgba(255, 250, 238, 0.45) 150deg,
+    rgba(255, 205, 140, 0.5) 200deg,
+    rgba(255, 250, 238, 0.75) 290deg,
     rgba(255, 250, 238, 1)
   );
   -webkit-mask: radial-gradient(
     closest-side,
-    transparent 84%,
-    #000 88%,
-    #000 96%,
-    transparent 100%
+    transparent 86%,
+    #000 89%,
+    #000 95%,
+    transparent 98%
   );
   mask: radial-gradient(
     closest-side,
-    transparent 84%,
-    #000 88%,
-    #000 96%,
-    transparent 100%
+    transparent 86%,
+    #000 89%,
+    #000 95%,
+    transparent 98%
   );
-  filter: blur(1px);
+  filter: blur(0.6px);
 }
 
 /* Per-page choreography: the black hole travels right-to-left through the
