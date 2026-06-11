@@ -241,9 +241,8 @@ h3 {
   animation: disk-glow 5s ease-in-out infinite alternate;
 }
 
-/* On page change the disk does one smooth pendulum swing: it tips up
-   while the page exits and the next page settles it back to rest from
-   the same angle, so the motion is continuous across the switch */
+/* The disk swing plays only after arriving on the new page: it starts
+   tipped in the travel direction and eases back to rest */
 html[data-enter="forward"] .bh-disk-back {
   animation: disk-settle-forward 1.6s cubic-bezier(0.45, 0, 0.25, 1) both;
 }
@@ -260,18 +259,6 @@ html[data-enter="back"] .bh-disk-back {
 html[data-enter="back"] .bh-disk-front {
   animation: disk-settle-back 1.6s cubic-bezier(0.45, 0, 0.25, 1) both,
     disk-glow 5s ease-in-out infinite alternate;
-}
-
-/* Exit half of the swing; must come after the enter rules so it wins
-   while both data-enter and the exit class are present */
-html.page-exit-forward .bh-disk-back,
-html.page-exit-forward .bh-disk-front {
-  animation: disk-swing-out-forward 0.35s ease-out both;
-}
-
-html.page-exit-back .bh-disk-back,
-html.page-exit-back .bh-disk-front {
-  animation: disk-swing-out-back 0.35s ease-out both;
 }
 
 /* Event horizon: pure black shadow, no rim so the ring floats free */
@@ -1016,26 +1003,7 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* Pendulum swing of the disk across a page change: the exit half tips
-   the disk up to the apex, the enter half settles it back to rest */
-@keyframes disk-swing-out-forward {
-  from {
-    transform: rotate(-6deg);
-  }
-  to {
-    transform: rotate(24deg);
-  }
-}
-
-@keyframes disk-swing-out-back {
-  from {
-    transform: rotate(-6deg);
-  }
-  to {
-    transform: rotate(-36deg);
-  }
-}
-
+/* Disk swing after a page change, easing back to the resting angle */
 @keyframes disk-settle-forward {
   from {
     transform: rotate(24deg);
