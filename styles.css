@@ -233,14 +233,45 @@ h3 {
   clip-path: inset(0 0 50% 0);
   filter: blur(2.5px);
   opacity: 0.7;
-  animation: disk-rotate 26s linear infinite;
 }
 
 .bh-disk-front {
   clip-path: inset(50% 0 0 0);
   filter: blur(0.8px) drop-shadow(0 0 8px rgba(255, 180, 110, 0.45));
-  animation: disk-rotate 26s linear infinite,
+  animation: disk-glow 5s ease-in-out infinite alternate;
+}
+
+/* On page change the disk does one smooth pendulum swing: it tips up
+   while the page exits and the next page settles it back to rest from
+   the same angle, so the motion is continuous across the switch */
+html[data-enter="forward"] .bh-disk-back {
+  animation: disk-settle-forward 1.6s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+
+html[data-enter="forward"] .bh-disk-front {
+  animation: disk-settle-forward 1.6s cubic-bezier(0.45, 0, 0.25, 1) both,
     disk-glow 5s ease-in-out infinite alternate;
+}
+
+html[data-enter="back"] .bh-disk-back {
+  animation: disk-settle-back 1.6s cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+
+html[data-enter="back"] .bh-disk-front {
+  animation: disk-settle-back 1.6s cubic-bezier(0.45, 0, 0.25, 1) both,
+    disk-glow 5s ease-in-out infinite alternate;
+}
+
+/* Exit half of the swing; must come after the enter rules so it wins
+   while both data-enter and the exit class are present */
+html.page-exit-forward .bh-disk-back,
+html.page-exit-forward .bh-disk-front {
+  animation: disk-swing-out-forward 0.35s ease-out both;
+}
+
+html.page-exit-back .bh-disk-back,
+html.page-exit-back .bh-disk-front {
+  animation: disk-swing-out-back 0.35s ease-out both;
 }
 
 /* Event horizon: pure black shadow, no rim so the ring floats free */
@@ -284,7 +315,6 @@ h3 {
     transparent 98%
   );
   filter: blur(0.6px);
-  animation: ring-orbit 14s linear infinite;
 }
 
 /* Per-page choreography: the black hole travels right-to-left through the
@@ -986,20 +1016,41 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* The accretion disk plane slowly rotates around the black hole */
-@keyframes disk-rotate {
+/* Pendulum swing of the disk across a page change: the exit half tips
+   the disk up to the apex, the enter half settles it back to rest */
+@keyframes disk-swing-out-forward {
   from {
     transform: rotate(-6deg);
   }
   to {
-    transform: rotate(354deg);
+    transform: rotate(24deg);
   }
 }
 
-/* Light orbiting the photon ring */
-@keyframes ring-orbit {
+@keyframes disk-swing-out-back {
+  from {
+    transform: rotate(-6deg);
+  }
   to {
-    transform: rotate(360deg);
+    transform: rotate(-36deg);
+  }
+}
+
+@keyframes disk-settle-forward {
+  from {
+    transform: rotate(24deg);
+  }
+  to {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes disk-settle-back {
+  from {
+    transform: rotate(-36deg);
+  }
+  to {
+    transform: rotate(-6deg);
   }
 }
 
