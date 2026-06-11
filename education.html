@@ -3,109 +3,177 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Joseph Bressani - Home</title>
+    <title>Education — Joseph Bressani</title>
+    <meta
+      name="description"
+      content="Education and technical skills of Joseph Bressani — B.S. in Computer Engineering at the University of South Florida, 3.75 GPA, Dean's List."
+    />
+    <meta name="theme-color" content="#060612" />
+    <meta property="og:title" content="Education — Joseph Bressani" />
+    <meta
+      property="og:description"
+      content="B.S. in Computer Engineering at the University of South Florida, 3.75 GPA."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://joseph.jbressani.org/education.html" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='17' fill='%23667eea'/%3E%3Cellipse cx='32' cy='32' rx='28' ry='8' fill='none' stroke='%23a78bfa' stroke-width='4' transform='rotate(-18 32 32)'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
   </head>
   <body>
-    <div id="space-background"></div>
-    <nav id="navbar">
-      <div class="nav-container">
-        <a href="index.html" class="logo">JB</a>
-        <ul class="nav-links">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="space-background" aria-hidden="true"></div>
+
+    <header id="navbar">
+      <nav class="nav-container" aria-label="Primary">
+        <a href="index.html" class="logo">JB<span>.</span></a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-menu"
+          aria-label="Toggle navigation"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <ul id="nav-menu" class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="education.html" class="active">Education</a></li>
-          <li><a href="projects.html">Projects</a></li>
           <li><a href="experience.html">Experience</a></li>
+          <li><a href="projects.html">Projects</a></li>
+          <li>
+            <a href="education.html" class="active" aria-current="page"
+              >Education</a
+            >
+          </li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
-      </div>
-    </nav>
+      </nav>
+    </header>
 
-    <section id="home" class="visible">
-      <div class="hero-content">
-        <h1>Joseph Bressani</h1>
-        <p>Computer Engineering Student</p>
-        <div class="contact-info">
-          <p>josephbressani1117@gmail.com</p>
-          <p>joseph.jbressani.org | Tampa, FL 33647</p>
-        </div>
-
-        <div class="intro-text">
-          <p>
-            Welcome to my digital portfolio! I'm a passionate Computer
-            Engineering student at the University of South Florida with a strong
-            focus on infrastructure development, web technologies, and system
-            administration.
+    <main id="main">
+      <section class="page-section" aria-labelledby="education-title">
+        <div class="content-section">
+          <h2 class="section-title" id="education-title">Education</h2>
+          <p class="section-subtitle">
+            My academic background and the technical skills I've built along
+            the way.
           </p>
-          <p>
-            Currently maintaining a 3.72 GPA and recognized on the Dean's List,
-            I combine academic excellence with hands-on project experience in
-            virtualization, networking, and full-stack development.
-          </p>
-        </div>
 
-        <div class="cta-buttons">
-          <a href="projects.html" class="cta-button">View My Projects</a>
-          <a href="contact.html" class="cta-button secondary">Get In Touch</a>
+          <article class="card reveal">
+            <div class="card-header">
+              <h3>B.S. in Computer Engineering</h3>
+              <span class="badge">GPA 3.75</span>
+            </div>
+            <p class="role-meta">
+              <strong>University of South Florida</strong> &middot; Tampa, FL
+            </p>
+            <p class="year">2023 &ndash; 2027 (Expected)</p>
+            <p>
+              Dean's List (3&times;). Coursework and projects focused on
+              computer systems, networking, and infrastructure development.
+            </p>
+          </article>
+
+          <h3 class="subsection-title">Technical Skills</h3>
+          <div class="skills-grid">
+            <article class="card reveal">
+              <h3>Programming</h3>
+              <div class="project-tech">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">C/C++</span>
+                <span class="tech-tag">JavaScript</span>
+                <span class="tech-tag">TypeScript</span>
+                <span class="tech-tag">SQL</span>
+                <span class="tech-tag">Luau</span>
+                <span class="tech-tag">HTML</span>
+                <span class="tech-tag">CSS</span>
+              </div>
+            </article>
+
+            <article class="card reveal">
+              <h3>Web Development</h3>
+              <div class="project-tech">
+                <span class="tech-tag">Angular</span>
+                <span class="tech-tag">Responsive Design</span>
+                <span class="tech-tag">GitHub Pages</span>
+                <span class="tech-tag">Custom Domains</span>
+              </div>
+            </article>
+
+            <article class="card reveal">
+              <h3>Infrastructure &amp; Networking</h3>
+              <div class="project-tech">
+                <span class="tech-tag">Proxmox</span>
+                <span class="tech-tag">Ubuntu Server</span>
+                <span class="tech-tag">Virtualization</span>
+                <span class="tech-tag">Containers</span>
+                <span class="tech-tag">Port Forwarding</span>
+                <span class="tech-tag">LAN/WAN Setup</span>
+              </div>
+            </article>
+
+            <article class="card reveal">
+              <h3>Tools &amp; Systems</h3>
+              <div class="project-tech">
+                <span class="tech-tag">VS Code</span>
+                <span class="tech-tag">GitHub</span>
+                <span class="tech-tag">Linux/Windows CLI</span>
+                <span class="tech-tag">Roblox Studio</span>
+                <span class="tech-tag">Server Administration</span>
+                <span class="tech-tag">Self-hosted Services</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="cta-container">
+            <p>See how I've put these skills to work.</p>
+            <div>
+              <a href="projects.html" class="cta-button">View My Projects</a>
+              <a href="experience.html" class="cta-button secondary"
+                >View Experience</a
+              >
+            </div>
+          </div>
         </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>&copy; <span id="year">2026</span> Joseph Bressani</p>
+        <ul class="footer-links">
+          <li><a href="mailto:josephbressani1117@gmail.com">Email</a></li>
+          <li>
+            <a
+              href="https://www.linkedin.com/in/joseph-bressani-0369a224a/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >LinkedIn</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://github.com/xLostsol"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub</a
+            >
+          </li>
+        </ul>
       </div>
-    </section>
+    </footer>
 
-    <style>
-      .intro-text {
-        max-width: 800px;
-        margin: 2rem auto;
-        animation: slideInUp 1s ease 0.5s both;
-      }
-
-      .intro-text p {
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-        opacity: 0.9;
-        line-height: 1.8;
-      }
-
-      .cta-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-top: 2rem;
-        animation: slideInUp 1s ease 0.6s both;
-      }
-
-      .cta-button.secondary {
-        background: transparent;
-        border: 2px solid rgba(255, 255, 255, 0.7);
-      }
-
-      .cta-button.secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: white;
-      }
-
-      .nav-links a.active {
-        color: #667eea;
-        font-weight: 600;
-      }
-
-      .nav-links a.active::after {
-        width: 100%;
-      }
-
-      @media (max-width: 768px) {
-        .cta-buttons {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .cta-button {
-          width: 200px;
-          text-align: center;
-        }
-      }
-    </style>
-
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
   </body>
 </html>
