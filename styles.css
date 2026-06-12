@@ -1117,6 +1117,11 @@ html[data-enter="back"] #space-background {
     padding: calc(var(--nav-height) + 1.5rem) 1rem 2rem;
   }
 
+  /* Smaller halo so the galaxy stays visible around the hero text */
+  .hero-content::before {
+    inset: -10% -12%;
+  }
+
   .footer-inner {
     flex-direction: column;
     justify-content: center;

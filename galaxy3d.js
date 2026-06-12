@@ -34,13 +34,34 @@ function initGalaxy() {
     1,
     1000
   );
-  camera.position.set(0, 7, 26);
-  camera.lookAt(0, 0, 0);
+
+  var BASE_DIST = 26;
+  var coreMaterial;
+  var diskMaterial;
+
+  // On narrow portrait screens the horizontal field of view shrinks, so
+  // pull the camera back until the whole galaxy fits; wide screens keep
+  // the original framing. Point size scales up to match the distance.
+  var updateCamera = function () {
+    var aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = aspect;
+    var dist = Math.min(
+      62,
+      Math.max(BASE_DIST, 16 / (Math.tan(Math.PI / 6) * aspect))
+    );
+    var s = dist / BASE_DIST;
+    camera.position.set(0, 7 * s, dist);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+    if (coreMaterial && diskMaterial) {
+      coreMaterial.size = 0.125 * s;
+      diskMaterial.size = 0.125 * s;
+    }
+  };
 
   window.addEventListener("resize", function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    updateCamera();
   });
 
   var gu = { time: { value: 0 } };
@@ -137,14 +158,18 @@ function initGalaxy() {
   };
 
   // Core wobbles forever; the disk holds still
-  var core = new THREE.Points(coreGeometry, makeMaterial(true));
-  var disk = new THREE.Points(diskGeometry, makeMaterial(false));
+  coreMaterial = makeMaterial(true);
+  diskMaterial = makeMaterial(false);
+  var core = new THREE.Points(coreGeometry, coreMaterial);
+  var disk = new THREE.Points(diskGeometry, diskMaterial);
   [core, disk].forEach(function (points) {
     points.rotation.order = "ZYX";
     points.rotation.z = 0.2;
     points.position.y = -1.5;
     scene.add(points);
   });
+
+  updateCamera();
 
   // Page-change spin: start fast in the swipe direction, ease to a stop
   var enterDir = document.documentElement.getAttribute("data-enter");
