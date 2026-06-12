@@ -21,6 +21,9 @@
   --nav-height: 4.5rem;
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  /* Celestial body sizes scale with the viewport for a consistent look */
+  --bh-size: clamp(130px, 19vmin, 230px);
+  --sun-size: clamp(72px, 10vmin, 120px);
 }
 
 /* ----- Base ----- */
@@ -143,8 +146,8 @@ h3 {
 .sun {
   left: 8%;
   top: 68%;
-  width: 120px;
-  height: 120px;
+  width: var(--sun-size);
+  height: var(--sun-size);
   border-radius: 50%;
   background: radial-gradient(
     circle at 40% 35%,
@@ -173,8 +176,8 @@ h3 {
 .black-hole {
   left: 76%;
   top: 10%;
-  width: 230px;
-  height: 230px;
+  width: var(--bh-size);
+  height: var(--bh-size);
   opacity: 0.95;
 }
 
@@ -880,31 +883,32 @@ html.page-exit-forward main,
 html.page-exit-back main,
 html[data-enter] main {
   transform-origin: 50% 100%;
+  will-change: transform, opacity;
 }
 
 html.page-exit-forward main {
-  animation: card-out-left 0.35s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+  animation: card-out-left 0.45s cubic-bezier(0.4, 0, 0.7, 0.5) both;
 }
 
 html.page-exit-back main {
-  animation: card-out-right 0.35s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+  animation: card-out-right 0.45s cubic-bezier(0.4, 0, 0.7, 0.5) both;
 }
 
 html[data-enter="forward"] main {
-  animation: card-in-right 0.55s cubic-bezier(0.18, 0.85, 0.3, 1) both;
+  animation: card-in-right 0.7s cubic-bezier(0.16, 0.8, 0.3, 1) both;
 }
 
 html[data-enter="back"] main {
-  animation: card-in-left 0.55s cubic-bezier(0.18, 0.85, 0.3, 1) both;
+  animation: card-in-left 0.7s cubic-bezier(0.16, 0.8, 0.3, 1) both;
 }
 
 /* The universe swirls slightly as pages change */
 html.page-exit-forward #space-background {
-  transform: rotate(2deg) scale(1.1);
+  transform: rotate(1.2deg) scale(1.06);
 }
 
 html.page-exit-back #space-background {
-  transform: rotate(-2deg) scale(1.1);
+  transform: rotate(-1.2deg) scale(1.06);
 }
 
 html[data-enter="forward"] #space-background {
@@ -918,23 +922,23 @@ html[data-enter="back"] #space-background {
 @keyframes card-out-left {
   to {
     opacity: 0;
-    transform: translateX(-115%) rotate(-7deg);
+    transform: translateX(-55%) rotate(-3deg);
   }
 }
 
 @keyframes card-out-right {
   to {
     opacity: 0;
-    transform: translateX(115%) rotate(7deg);
+    transform: translateX(55%) rotate(3deg);
   }
 }
 
 @keyframes card-in-right {
   from {
     opacity: 0;
-    transform: translateX(72%) translateY(3%) rotate(5deg) scale(0.94);
+    transform: translateX(40%) translateY(2%) rotate(2.5deg) scale(0.97);
   }
-  55% {
+  60% {
     opacity: 1;
   }
 }
@@ -942,16 +946,16 @@ html[data-enter="back"] #space-background {
 @keyframes card-in-left {
   from {
     opacity: 0;
-    transform: translateX(-72%) translateY(3%) rotate(-5deg) scale(0.94);
+    transform: translateX(-40%) translateY(2%) rotate(-2.5deg) scale(0.97);
   }
-  55% {
+  60% {
     opacity: 1;
   }
 }
 
 @keyframes bg-settle-forward {
   from {
-    transform: rotate(-2deg) scale(1.1);
+    transform: rotate(-1.2deg) scale(1.06);
   }
   to {
     transform: none;
@@ -960,7 +964,7 @@ html[data-enter="back"] #space-background {
 
 @keyframes bg-settle-back {
   from {
-    transform: rotate(2deg) scale(1.1);
+    transform: rotate(1.2deg) scale(1.06);
   }
   to {
     transform: none;
@@ -1120,15 +1124,11 @@ html[data-enter="back"] #space-background {
   }
 
   .black-hole {
-    width: 130px;
-    height: 130px;
-    opacity: 0.75;
+    opacity: 0.8;
   }
 
   .sun {
-    width: 80px;
-    height: 80px;
-    opacity: 0.65;
+    opacity: 0.7;
   }
 }
 
