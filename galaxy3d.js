@@ -38,30 +38,45 @@ function initGalaxy() {
   var BASE_DIST = 26;
   var coreMaterial;
   var diskMaterial;
+  var targetDist = BASE_DIST;
+  var currentDist = BASE_DIST;
 
   // On narrow portrait screens the horizontal field of view shrinks, so
   // pull the camera back until the whole galaxy fits; wide screens keep
   // the original framing. Point size scales up to match the distance.
-  var updateCamera = function () {
+  var computeTargetDist = function () {
     var aspect = window.innerWidth / window.innerHeight;
     camera.aspect = aspect;
-    var dist = Math.min(
+    camera.updateProjectionMatrix();
+    targetDist = Math.min(
       62,
       Math.max(BASE_DIST, 16 / (Math.tan(Math.PI / 6) * aspect))
     );
+  };
+
+  var applyCamera = function (dist) {
     var s = dist / BASE_DIST;
     camera.position.set(0, 7 * s, dist);
     camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix();
     if (coreMaterial && diskMaterial) {
       coreMaterial.size = 0.125 * s;
       diskMaterial.size = 0.125 * s;
     }
   };
 
+  // Mobile browsers fire resize when the URL bar hides while scrolling;
+  // ignore those small height-only changes, and glide to any real new
+  // framing in the render loop instead of snapping
+  var lastWidth = window.innerWidth;
+  var lastHeight = window.innerHeight;
   window.addEventListener("resize", function () {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    updateCamera();
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    if (w === lastWidth && Math.abs(h - lastHeight) < 160) return;
+    lastWidth = w;
+    lastHeight = h;
+    renderer.setSize(w, h);
+    computeTargetDist();
   });
 
   var gu = { time: { value: 0 } };
@@ -169,7 +184,9 @@ function initGalaxy() {
     scene.add(points);
   });
 
-  updateCamera();
+  computeTargetDist();
+  currentDist = targetDist;
+  applyCamera(currentDist);
 
   // Page-change spin: start fast in the swipe direction, ease to a stop
   var enterDir = document.documentElement.getAttribute("data-enter");
@@ -180,6 +197,10 @@ function initGalaxy() {
   renderer.setAnimationLoop(function () {
     var delta = Math.min(clock.getDelta(), 0.1);
     gu.time.value = clock.elapsedTime * 0.5 * Math.PI;
+    if (Math.abs(currentDist - targetDist) > 0.01) {
+      currentDist += (targetDist - currentDist) * Math.min(1, delta * 3);
+      applyCamera(currentDist);
+    }
     disk.rotation.y += spinVelocity * delta;
     spinVelocity *= Math.exp(-1.3 * delta);
     renderer.render(scene, camera);
