@@ -144,6 +144,9 @@
     if (event.defaultPrevented || event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
       return;
+    // The page-swipe transition belongs to the galaxy; Stars mode navigates
+    // plainly with no swipe (and no transition delay)
+    if (document.documentElement.getAttribute("data-bg") !== "galaxy") return;
 
     var link = event.target.closest("a");
     if (!link || link.target === "_blank" || link.origin !== location.origin)
