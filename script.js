@@ -181,4 +181,40 @@
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
   }
+
+  // Background style toggle: calm starfield vs animated galaxy. The choice
+  // persists in localStorage, and the galaxy's WebGL loop is started/stopped
+  // so "Stars" mode costs no GPU.
+  var bgButtons = document.querySelectorAll(".bg-toggle-btn");
+  if (bgButtons.length) {
+    var bgRoot = document.documentElement;
+    var applyBgMode = function (mode, persist) {
+      mode = mode === "galaxy" ? "galaxy" : "stars";
+      bgRoot.setAttribute("data-bg", mode);
+      bgButtons.forEach(function (b) {
+        b.setAttribute(
+          "aria-pressed",
+          String(b.getAttribute("data-bg-mode") === mode)
+        );
+      });
+      if (window.__bgGalaxy) {
+        if (mode === "galaxy") window.__bgGalaxy.start();
+        else window.__bgGalaxy.stop();
+      }
+      if (persist) {
+        try {
+          localStorage.setItem("bg-mode", mode);
+        } catch (e) {}
+      }
+    };
+
+    // Sync the buttons to the mode the inline head script already applied
+    applyBgMode(bgRoot.getAttribute("data-bg") || "stars", false);
+
+    bgButtons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        applyBgMode(b.getAttribute("data-bg-mode"), true);
+      });
+    });
+  }
 })();

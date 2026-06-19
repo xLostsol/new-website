@@ -26,15 +26,16 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="styles.css?v=9" />
     <script>
-      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} })();
+      (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <div id="space-background" aria-hidden="true">
       <div class="stars"></div>
+      <!-- Sun and black hole disabled to reduce lag; keeping the spinning galaxy.
       <div class="sun"></div>
       <div class="black-hole">
         <span class="bh-glow"></span>
@@ -43,6 +44,7 @@
         <span class="bh-ring"></span>
         <span class="bh-disk-front"></span>
       </div>
+      -->
     </div>
 
     <header id="navbar">
@@ -99,6 +101,17 @@
       </section>
     </main>
 
+    <div class="bg-toggle" role="group" aria-label="Background style">
+      <button type="button" class="bg-toggle-btn" data-bg-mode="stars" aria-pressed="true" title="Calm starry background">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L10.2 5.8 14.5 8 10.2 10.2 8 14.5 5.8 10.2 1.5 8 5.8 5.8 Z"/></svg>
+        <span class="bg-toggle-label">Stars</span>
+      </button>
+      <button type="button" class="bg-toggle-btn" data-bg-mode="galaxy" aria-pressed="false" title="Animated galaxy">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="1.25"/><path d="M9 6.5c2.4-1.2 4.6.6 3.7 3-.6 1.7-2.8 2.8-5.7 2.5"/><path d="M7 9.5c-2.4 1.2-4.6-.6-3.7-3 .6-1.7 2.8-2.8 5.7-2.5"/></svg>
+        <span class="bg-toggle-label">Galaxy</span>
+      </button>
+    </div>
+
     <footer class="site-footer">
       <div class="footer-inner">
         <p>&copy; <span id="year">2026</span> Joseph Bressani</p>
@@ -123,7 +136,7 @@
       </div>
     </footer>
 
-    <script src="script.js?v=3" defer></script>
-    <script type="module" src="galaxy3d.js?v=4"></script>
+    <script src="script.js?v=4" defer></script>
+    <script type="module" src="galaxy3d.js?v=5"></script>
   </body>
 </html>
