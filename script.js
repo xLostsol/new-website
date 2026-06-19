@@ -164,7 +164,7 @@
     document.documentElement.classList.add("page-exit-" + dir);
     setTimeout(function () {
       location.href = link.href;
-    }, 430);
+    }, 380);
   });
 
   // Reset transition state when restored from the back/forward cache

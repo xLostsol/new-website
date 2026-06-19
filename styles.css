@@ -14,10 +14,14 @@
   --accent: #8b9cf5;
   --accent-soft: rgba(102, 126, 234, 0.22);
   --gradient: linear-gradient(135deg, #667eea, #764ba2);
-  --radius-lg: 18px;
-  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
   --radius-pill: 999px;
   --shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+  /* Apple-style motion and materials: a settled spring-like ease shared by
+     buttons, cards, and page transitions, plus a frosted "vibrancy" filter */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
+  --material: saturate(180%) blur(20px);
   --nav-height: 4.5rem;
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
@@ -97,7 +101,7 @@ h3 {
     radial-gradient(30% 26% at 72% 12%, rgba(56, 189, 248, 0.08), transparent 70%),
     radial-gradient(36% 32% at 28% 88%, rgba(217, 70, 160, 0.07), transparent 70%),
     var(--bg);
-  transition: transform 0.45s ease;
+  transition: transform 0.6s var(--ease-apple);
 }
 
 /* Oversized square so the slow rotation never exposes edges */
@@ -526,10 +530,21 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
 
 .hero-stats li {
   background: var(--card);
+  -webkit-backdrop-filter: var(--material);
+  backdrop-filter: var(--material);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0.75rem 1.4rem;
+  padding: 0.85rem 1.5rem;
   min-width: 7.5rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 22px rgba(0, 0, 0, 0.22);
+  transition: transform 0.5s var(--ease-apple), box-shadow 0.5s var(--ease-apple);
+}
+
+.hero-stats li:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 16px 34px rgba(0, 0, 0, 0.34);
 }
 
 .stat-value {
@@ -564,32 +579,102 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
 }
 
 .cta-button {
-  display: inline-block;
-  padding: 0.8rem 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: 2.9rem;
+  padding: 0.7em 1.7em;
   border-radius: var(--radius-pill);
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  line-height: 1;
   text-decoration: none;
   color: #fff;
-  background: var(--gradient);
+  /* Brand gradient with a soft specular sheen layered over the top, so the
+     pill reads as a piece of lit glass (Apple's Liquid Glass language) */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.22),
+      rgba(255, 255, 255, 0.04) 42%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    var(--gradient);
   border: 1px solid transparent;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.14),
+    0 4px 14px rgba(102, 126, 234, 0.28);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  /* Native-feeling touch: no blue tap flash, no 300ms delay */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.32s var(--ease-apple),
+    box-shadow 0.32s var(--ease-apple),
+    filter 0.22s ease;
 }
 
+/* Hover only shifts light, never size or weight, so nothing reflows */
 .cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.14),
+    0 7px 22px rgba(102, 126, 234, 0.4);
+}
+
+/* Liquid Glass press: the capsule scales in and dims under the finger,
+   then springs back on release */
+.cta-button:active {
+  transform: scale(0.95);
+  filter: brightness(0.96);
+  transition-duration: 0.07s;
 }
 
 .cta-button.secondary {
-  background: transparent;
-  border-color: var(--border-hover);
   color: var(--text);
+  /* Clear glass capsule: translucent fill, frosted backdrop, hairline edge */
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.03) 45%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: var(--material);
+  backdrop-filter: var(--material);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 .cta-button.secondary:hover {
-  background: var(--accent-soft);
-  box-shadow: none;
+  filter: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.04) 45%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 6px 18px rgba(0, 0, 0, 0.24);
+}
+
+.cta-button.secondary:active {
+  transform: scale(0.95);
+  filter: none;
+  transition-duration: 0.07s;
 }
 
 /* ----- Section headings ----- */
@@ -629,16 +714,23 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
 /* ----- Cards ----- */
 .card {
   background: var(--card);
+  -webkit-backdrop-filter: var(--material);
+  backdrop-filter: var(--material);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: 1.75rem;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  /* Hairline top highlight reads as glass lit from above, the iOS material look */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: transform 0.5s var(--ease-apple), border-color 0.4s ease,
+    box-shadow 0.5s var(--ease-apple);
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-4px) scale(1.012);
   border-color: var(--border-hover);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 22px 48px rgba(0, 0, 0, 0.4);
 }
 
 .card h3 {
@@ -803,12 +895,18 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
 }
 
 .contact-link {
-  transition: background 0.25s ease, transform 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background 0.25s ease, transform 0.3s var(--ease-apple);
 }
 
 .contact-link:hover {
-  background: rgba(102, 126, 234, 0.4);
-  transform: translateY(-2px);
+  background: rgba(102, 126, 234, 0.36);
+}
+
+.contact-link:active {
+  transform: scale(0.96);
+  transition-duration: 0.07s;
 }
 
 .cta-container {
@@ -878,84 +976,95 @@ html.js .reveal.visible {
   transform: translateY(0);
 }
 
-/* ----- Card-deck page transitions ----- */
+/* ----- Apple-style page transitions ----- */
+/* The outgoing view recedes and dims while the incoming view glides forward
+   and settles, echoing the parallax push of iOS navigation. No rotation:
+   Apple keeps content flat and lets motion carry the depth. */
 html.page-exit-forward main,
 html.page-exit-back main,
 html[data-enter] main {
-  transform-origin: 50% 100%;
   will-change: transform, opacity;
 }
 
 html.page-exit-forward main {
-  animation: card-out-left 0.45s cubic-bezier(0.4, 0, 0.7, 0.5) both;
+  animation: page-out-left 0.4s var(--ease-apple) both;
 }
 
 html.page-exit-back main {
-  animation: card-out-right 0.45s cubic-bezier(0.4, 0, 0.7, 0.5) both;
+  animation: page-out-right 0.4s var(--ease-apple) both;
 }
 
 html[data-enter="forward"] main {
-  animation: card-in-right 0.7s cubic-bezier(0.16, 0.8, 0.3, 1) both;
+  animation: page-in-right 0.6s var(--ease-apple) both;
 }
 
 html[data-enter="back"] main {
-  animation: card-in-left 0.7s cubic-bezier(0.16, 0.8, 0.3, 1) both;
+  animation: page-in-left 0.6s var(--ease-apple) both;
 }
 
-/* The universe swirls slightly as pages change */
+/* The universe drifts with a subtle depth shift, slower than the content
+   in front of it for a layered parallax feel */
 html.page-exit-forward #space-background {
-  transform: rotate(1.2deg) scale(1.06);
+  transform: scale(1.04) translateX(-1.5%);
 }
 
 html.page-exit-back #space-background {
-  transform: rotate(-1.2deg) scale(1.06);
+  transform: scale(1.04) translateX(1.5%);
 }
 
 html[data-enter="forward"] #space-background {
-  animation: bg-settle-forward 0.7s ease both;
+  animation: bg-settle-forward 0.6s var(--ease-apple) both;
 }
 
 html[data-enter="back"] #space-background {
-  animation: bg-settle-back 0.7s ease both;
+  animation: bg-settle-back 0.6s var(--ease-apple) both;
 }
 
-@keyframes card-out-left {
+@keyframes page-out-left {
   to {
     opacity: 0;
-    transform: translateX(-55%) rotate(-3deg);
+    transform: translateX(-16%) scale(0.98);
   }
 }
 
-@keyframes card-out-right {
+@keyframes page-out-right {
   to {
     opacity: 0;
-    transform: translateX(55%) rotate(3deg);
+    transform: translateX(16%) scale(0.98);
   }
 }
 
-@keyframes card-in-right {
+@keyframes page-in-right {
   from {
     opacity: 0;
-    transform: translateX(40%) translateY(2%) rotate(2.5deg) scale(0.97);
+    transform: translateX(22%) scale(0.99);
   }
-  60% {
+  55% {
     opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-@keyframes card-in-left {
+@keyframes page-in-left {
   from {
     opacity: 0;
-    transform: translateX(-40%) translateY(2%) rotate(-2.5deg) scale(0.97);
+    transform: translateX(-22%) scale(0.99);
   }
-  60% {
+  55% {
     opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
 @keyframes bg-settle-forward {
   from {
-    transform: rotate(-1.2deg) scale(1.06);
+    transform: scale(1.04) translateX(1.5%);
   }
   to {
     transform: none;
@@ -964,7 +1073,7 @@ html[data-enter="back"] #space-background {
 
 @keyframes bg-settle-back {
   from {
-    transform: rotate(1.2deg) scale(1.06);
+    transform: scale(1.04) translateX(-1.5%);
   }
   to {
     transform: none;
