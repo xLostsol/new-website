@@ -1115,6 +1115,64 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
 }
 
+/* ----- Immersive galaxy "play" mode ----- */
+/* Hides the resume UI so the galaxy can be dragged/played with full-screen.
+   The toggle stays (and brightens) as the way back out. */
+html.immersive #navbar,
+html.immersive main,
+html.immersive .site-footer {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+html.immersive,
+html.immersive body {
+  overflow: hidden;
+}
+
+html.immersive .bg-toggle {
+  opacity: 1;
+}
+
+.bg-immersive-hint {
+  position: fixed;
+  left: 50%;
+  bottom: 5.25rem;
+  transform: translateX(-50%);
+  z-index: 1500;
+  padding: 0.5rem 1.05rem;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 16, 34, 0.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.bg-immersive-hint.show {
+  animation: hint-fade 4.5s ease forwards;
+}
+
+@keyframes hint-fade {
+  0% {
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* ----- Reveal on scroll ----- */
 html.js .reveal {
   opacity: 0;

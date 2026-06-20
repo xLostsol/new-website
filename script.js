@@ -211,13 +211,45 @@
       }
     };
 
+    // Immersive "play" mode: hide the resume UI so the galaxy can be played
+    // with freely. Entered by pressing Galaxy again while already in galaxy.
+    var hintEl = null;
+    var setImmersive = function (on) {
+      bgRoot.classList.toggle("immersive", on);
+      if (on) {
+        if (!hintEl) {
+          hintEl = document.createElement("div");
+          hintEl.className = "bg-immersive-hint";
+          hintEl.textContent =
+            "Drag to spin · move your mouse · Esc or Galaxy to exit";
+          document.body.appendChild(hintEl);
+        }
+        hintEl.classList.remove("show");
+        void hintEl.offsetWidth; // restart the fade animation
+        hintEl.classList.add("show");
+      }
+    };
+
     // Sync the buttons to the mode the inline head script already applied
     applyBgMode(bgRoot.getAttribute("data-bg") || "stars", false);
 
     bgButtons.forEach(function (b) {
       b.addEventListener("click", function () {
-        applyBgMode(b.getAttribute("data-bg-mode"), true);
+        var target = b.getAttribute("data-bg-mode");
+        // Pressing Galaxy while already in galaxy toggles immersive play mode
+        if (target === "galaxy" && bgRoot.getAttribute("data-bg") === "galaxy") {
+          setImmersive(!bgRoot.classList.contains("immersive"));
+        } else {
+          setImmersive(false);
+          applyBgMode(target, true);
+        }
       });
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && bgRoot.classList.contains("immersive")) {
+        setImmersive(false);
+      }
     });
   }
 })();
