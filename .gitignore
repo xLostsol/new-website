@@ -1,2 +1,5 @@
 # Local dev tooling (preview server config)
 .claude/
+
+# Playwright MCP snapshot artifacts
+.playwright-mcp/
