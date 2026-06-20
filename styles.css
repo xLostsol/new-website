@@ -1129,6 +1129,9 @@ html.immersive .site-footer {
 html.immersive,
 html.immersive body {
   overflow: hidden;
+  /* Stop the browser from claiming touch gestures so the galaxy gets the
+     pointer events for drag and two-finger pinch-zoom on mobile. */
+  touch-action: none;
 }
 
 html.immersive .bg-toggle {
