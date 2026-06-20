@@ -293,18 +293,27 @@ var Galaxy = (function () {
     // The readable UI: don't disturb points while the cursor is over the
     // content column, nav, footer or toggle, so the galaxy only reacts out on
     // the open edges. In immersive mode the UI is hidden, so everything reacts.
+    // Each element carries its own buffer; the home hero gets a wider one so
+    // moving around the centered home content has more room for error.
+    var BASE_PAD = 14;
+    var HERO_PAD = 80;
     var uiEls = document.querySelectorAll(
       "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle"
     );
+    var uiPads = [];
+    for (var p = 0; p < uiEls.length; p++) {
+      uiPads.push(uiEls[p].classList.contains("hero-content") ? HERO_PAD : BASE_PAD);
+    }
     var overUI = function (x, y) {
       for (var i = 0; i < uiEls.length; i++) {
         var r = uiEls[i].getBoundingClientRect();
         if (!r.width) continue;
+        var pad = uiPads[i];
         if (
-          x >= r.left - 14 &&
-          x <= r.right + 14 &&
-          y >= r.top - 14 &&
-          y <= r.bottom + 14
+          x >= r.left - pad &&
+          x <= r.right + pad &&
+          y >= r.top - pad &&
+          y <= r.bottom + pad
         )
           return true;
       }
