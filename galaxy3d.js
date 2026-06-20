@@ -174,10 +174,10 @@ var Galaxy = (function () {
       "vec2 mNdc = gl_Position.xy / gl_Position.w;\n" +
       "vec2 mDiff = (mNdc - uMouse) * vec2(uAspect, 1.0);\n" +
       "float mDist = length(mDiff);\n" +
-      "if (uMouseStr > 0.001 && mDist < 0.26) {\n" +
-      "  float f = 1.0 - mDist / 0.26; f = f * f;\n" +
+      "if (uMouseStr > 0.001 && mDist < 0.18) {\n" +
+      "  float f = 1.0 - mDist / 0.18; f = f * f;\n" +
       "  vec2 mDir = mDist > 0.0001 ? normalize(mDiff) / vec2(uAspect, 1.0) : vec2(0.0);\n" +
-      "  gl_Position.xy += mDir * f * 0.2 * uMouseStr * gl_Position.w;\n" +
+      "  gl_Position.xy += mDir * f * 0.16 * uMouseStr * gl_Position.w;\n" +
       "}";
 
     var makeMaterial = function (withWobble) {
@@ -294,26 +294,32 @@ var Galaxy = (function () {
     // content column, nav, footer or toggle, so the galaxy only reacts out on
     // the open edges. In immersive mode the UI is hidden, so everything reacts.
     // Each element carries its own buffer; the home hero gets a wider one so
-    // moving around the centered home content has more room for error.
+    // moving around the centered home content has more room for error, and a
+    // taller vertical buffer than horizontal.
     var BASE_PAD = 14;
-    var HERO_PAD = 80;
+    var HERO_PAD_X = 80;
+    var HERO_PAD_Y = 160;
     var uiEls = document.querySelectorAll(
       "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle"
     );
-    var uiPads = [];
+    var uiPadX = [];
+    var uiPadY = [];
     for (var p = 0; p < uiEls.length; p++) {
-      uiPads.push(uiEls[p].classList.contains("hero-content") ? HERO_PAD : BASE_PAD);
+      var hero = uiEls[p].classList.contains("hero-content");
+      uiPadX.push(hero ? HERO_PAD_X : BASE_PAD);
+      uiPadY.push(hero ? HERO_PAD_Y : BASE_PAD);
     }
     var overUI = function (x, y) {
       for (var i = 0; i < uiEls.length; i++) {
         var r = uiEls[i].getBoundingClientRect();
         if (!r.width) continue;
-        var pad = uiPads[i];
+        var px = uiPadX[i];
+        var py = uiPadY[i];
         if (
-          x >= r.left - pad &&
-          x <= r.right + pad &&
-          y >= r.top - pad &&
-          y <= r.bottom + pad
+          x >= r.left - px &&
+          x <= r.right + px &&
+          y >= r.top - py &&
+          y <= r.bottom + py
         )
           return true;
       }
