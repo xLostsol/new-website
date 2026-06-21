@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=18" />
+    <link rel="stylesheet" href="styles.css?v=19" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -205,6 +205,13 @@
       </button>
       <div class="palette-panel" id="palette-stars-panel" role="dialog" aria-label="Star colors">
         <p class="palette-title">Star Palette</p>
+        <div class="palette-toggle">
+          <span class="palette-toggle-label">Spin</span>
+          <label class="palette-switch">
+            <input type="checkbox" class="stars-spin-toggle" checked aria-label="Star spin on or off" />
+            <span class="palette-switch-track"><span class="palette-switch-thumb"></span></span>
+          </label>
+        </div>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
             <span class="swatch-chip" style="background: linear-gradient(135deg, #ffffff, #05060f);"></span>
@@ -292,8 +299,8 @@
       </div>
     </footer>
 
-    <script src="startrails.js?v=3" defer></script>
-    <script src="script.js?v=14" defer></script>
+    <script src="startrails.js?v=4" defer></script>
+    <script src="script.js?v=15" defer></script>
     <script type="module" src="galaxy3d.js?v=15"></script>
   </body>
 </html>

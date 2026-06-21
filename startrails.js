@@ -9,7 +9,7 @@
 //
 // Canvas 2D (no WebGL). It builds lazily and runs only while immersive Stars
 // mode is active, exposing window.__bgStars.start()/stop()/setSpin()/
-// setColors()/setZoom().
+// setColors()/setZoom()/setSpinning().
 // Technique inspiration: the classic "rotate the whole field + fade" approach
 // used for star-trail and light-trail canvas effects.
 (function () {
@@ -85,6 +85,14 @@
       if (!isNaN(z0)) zoom = clamp(z0, ZOOM_MIN, ZOOM_MAX);
     } catch (e) {}
 
+    // Spin on/off (star palette toggle). When off the field freezes into a
+    // static starfield and the existing trails fade away; the spin slider still
+    // remembers its speed for when spin is switched back on. On by default.
+    var spinning = true;
+    try {
+      if (localStorage.getItem("stars-spinning") === "0") spinning = false;
+    } catch (e) {}
+
     function sizeCanvas() {
       dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       w = window.innerWidth;
@@ -146,7 +154,7 @@
       last = now;
 
       var prevRot = rotation;
-      rotation += spinRate * delta;
+      if (spinning) rotation += spinRate * delta;
 
       // Fading dark wash: previous arc segments dim into trailing tails.
       ctx.globalCompositeOperation = "source-over";
@@ -278,12 +286,19 @@
       repaint();
     }
 
+    // Freeze or resume the rotation (star palette spin toggle). The frame loop
+    // keeps running so the trails fade off / rebuild smoothly on either change.
+    function setSpinning(on) {
+      spinning = !!on;
+    }
+
     return {
       start: start,
       stop: stop,
       setSpin: setSpin,
       setColors: setColors,
       setZoom: setZoom,
+      setSpinning: setSpinning,
     };
   })();
 

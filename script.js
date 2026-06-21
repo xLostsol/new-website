@@ -631,6 +631,27 @@
     });
   }
 
+  // Star spin on/off toggle (inside the star palette). A boolean switch that
+  // freezes or resumes the trail rotation. The choice persists and the renderer
+  // reads it again when the trails first build, so it survives a reload.
+  var spinToggle = document.querySelector(".stars-spin-toggle");
+  if (spinToggle) {
+    var savedSpinning = true;
+    try {
+      if (localStorage.getItem("stars-spinning") === "0") savedSpinning = false;
+    } catch (e) {}
+    spinToggle.checked = savedSpinning;
+    spinToggle.addEventListener("change", function () {
+      var on = spinToggle.checked;
+      if (window.__bgStars && window.__bgStars.setSpinning) {
+        window.__bgStars.setSpinning(on);
+      }
+      try {
+        localStorage.setItem("stars-spinning", on ? "1" : "0");
+      } catch (e) {}
+    });
+  }
+
   // Immersive spin slider. It drives whichever play mode is active: the galaxy
   // in Galaxy mode, the star trails in Stars mode. Each mode keeps its own saved
   // speed, and the slider re-syncs to the active mode when immersive is entered
