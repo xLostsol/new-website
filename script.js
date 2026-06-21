@@ -637,4 +637,30 @@
       });
     }
   }
+
+  // Sky Slam easter egg: clicking the card four times reveals a "spy disguise"
+  // (the IM A SPY cap + sunglasses pop out onto its corners). Clicking it again
+  // hides them; the counter resets if you pause too long between clicks.
+  var spyCard = document.querySelector(".project-card.has-spy");
+  if (spyCard) {
+    var spyClicks = 0;
+    var spyTimer = null;
+    spyCard.addEventListener("click", function (e) {
+      if (e.target.closest("a")) return; // let the Roblox link work normally
+      if (spyCard.classList.contains("spy-on")) {
+        spyCard.classList.remove("spy-on");
+        spyClicks = 0;
+        return;
+      }
+      spyClicks++;
+      clearTimeout(spyTimer);
+      spyTimer = setTimeout(function () {
+        spyClicks = 0;
+      }, 1600);
+      if (spyClicks >= 4) {
+        spyCard.classList.add("spy-on");
+        spyClicks = 0;
+      }
+    });
+  }
 })();
