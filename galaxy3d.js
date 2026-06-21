@@ -36,6 +36,20 @@ var Galaxy = (function () {
     }
   } catch (e) {}
 
+  // Continuous, non-decaying spin rate set by the immersive spin slider. It is
+  // stored as a slider value (-100..100) and mapped to radians/second here, so
+  // the chosen spin is in place the moment the galaxy first builds. It is only
+  // applied while immersive (see the loop), so reading mode keeps its calm
+  // idle drift. Negative spins the other way; 0 leaves just the idle drift.
+  var SPIN_MAX = 1.8;
+  var autoSpin = 0;
+  try {
+    var savedSpin = parseFloat(localStorage.getItem("galaxy-spin"));
+    if (!isNaN(savedSpin)) {
+      autoSpin = (Math.max(-100, Math.min(100, savedSpin)) / 100) * SPIN_MAX;
+    }
+  } catch (e) {}
+
   // Heavy one-time setup: only runs the first time the galaxy is shown
   function build() {
     try {
@@ -483,7 +497,8 @@ var Galaxy = (function () {
       // The layout read happens here, at most once per frame and only after a
       // move/scroll, so pointermove/wheel never force synchronous layout. In
       // immersive mode the UI is hidden, so everything reacts (no measuring).
-      if (isImmersive()) {
+      var imm = isImmersive();
+      if (imm) {
         active = true;
       } else if (cursorDirty) {
         active = !overUI(mx, my);
@@ -507,7 +522,8 @@ var Galaxy = (function () {
       }
 
       if (!dragging) {
-        rotY += (spinVel + IDLE_SPIN) * delta;
+        // The slider's continuous spin only applies in immersive play mode.
+        rotY += (spinVel + IDLE_SPIN + (imm ? autoSpin : 0)) * delta;
         spinVel *= Math.exp(-1.2 * delta);
         tilt += (0 - tilt) * Math.min(1, delta * 2);
       }
@@ -552,7 +568,14 @@ var Galaxy = (function () {
     }
   }
 
-  return { start: start, stop: stop, setColors: setColors };
+  // Set the continuous spin rate from the slider (value in -100..100). Stored
+  // at module scope so the running loop picks it up live while immersive.
+  function setSpin(value) {
+    var v = Math.max(-100, Math.min(100, Number(value) || 0));
+    autoSpin = (v / 100) * SPIN_MAX;
+  }
+
+  return { start: start, stop: stop, setColors: setColors, setSpin: setSpin };
 })();
 
 window.__bgGalaxy = Galaxy;

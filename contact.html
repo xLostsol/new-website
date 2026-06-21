@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=14" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -192,18 +192,35 @@
         <div class="palette-divider"></div>
         <div class="palette-custom">
           <span class="palette-custom-label">Custom</span>
-          <span class="custom-pickers">
-            <label class="custom-swatch" title="Core color">
-              <input type="color" data-custom="in" value="#e39b00" aria-label="Galaxy core color" />
-              <span>Core</span>
-            </label>
-            <label class="custom-swatch" title="Edge color">
-              <input type="color" data-custom="out" value="#6432ff" aria-label="Galaxy edge color" />
-              <span>Edge</span>
-            </label>
-          </span>
+          <div class="custom-targets" role="group" aria-label="Choose endpoint to edit">
+            <button type="button" class="custom-target" data-target="in" aria-pressed="true">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Core</span>
+            </button>
+            <button type="button" class="custom-target" data-target="out" aria-pressed="false">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Edge</span>
+            </button>
+          </div>
+          <div class="cp">
+            <div class="cp-sv" role="slider" aria-label="Saturation and brightness" tabindex="0">
+              <span class="cp-sv-thumb"></span>
+            </div>
+            <input type="range" class="cp-hue" min="0" max="360" step="1" value="0" aria-label="Hue" />
+            <div class="cp-hex-row">
+              <span class="cp-hash">#</span>
+              <input type="text" class="cp-hex" maxlength="6" spellcheck="false" autocomplete="off" aria-label="Hex color" />
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="spin-control" role="group" aria-label="Galaxy spin">
+      <button type="button" class="spin-reset" aria-label="Reset galaxy spin" title="Reset spin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+      </button>
+      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Galaxy spin speed" />
     </div>
 
     <div class="bg-toggle" role="group" aria-label="Background style">
@@ -241,7 +258,7 @@
       </div>
     </footer>
 
-    <script src="script.js?v=7" defer></script>
-    <script type="module" src="galaxy3d.js?v=13"></script>
+    <script src="script.js?v=9" defer></script>
+    <script type="module" src="galaxy3d.js?v=14"></script>
   </body>
 </html>
