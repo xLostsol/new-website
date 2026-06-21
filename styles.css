@@ -161,7 +161,7 @@ html.immersive[data-bg="stars"] .stars {
 
 .star {
   position: absolute;
-  background: var(--star-color, #fff);
+  background: #fff;
   border-radius: 50%;
   opacity: var(--star-opacity, 0.6);
   animation: twinkle var(--twinkle-duration, 5s) ease-in-out var(--twinkle-delay, 0s)
@@ -169,7 +169,7 @@ html.immersive[data-bg="stars"] .stars {
 }
 
 .star-bright {
-  box-shadow: 0 0 6px 1px var(--star-glow, rgba(214, 222, 255, 0.55));
+  box-shadow: 0 0 6px 1px rgba(214, 222, 255, 0.55);
 }
 
 /* Celestial bodies drift to a new spot on each page */
@@ -1143,13 +1143,24 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   z-index: 1500;
 }
 
-/* Mode-aware palette icon: the galaxy mark over the galaxy, the star cluster
-   over the calm starfield. The panel's title and presets are themed in JS. */
-html[data-bg="galaxy"] .palette-icon-stars {
-  display: none;
+/* The galaxy palette only matters over the galaxy; hide it elsewhere. */
+html[data-bg="stars"] .palette-galaxy {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
-html[data-bg="stars"] .palette-icon-galaxy {
-  display: none;
+
+/* The star palette belongs to the immersive Stars play mode only. */
+.palette-stars {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.immersive[data-bg="stars"] .palette-stars {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .palette-btn {

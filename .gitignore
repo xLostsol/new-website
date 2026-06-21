@@ -3,3 +3,4 @@
 
 # Playwright MCP snapshot artifacts
 .playwright-mcp/
+.DS_Store

@@ -174,20 +174,19 @@
       </section>
     </main>
 
-    <div class="palette" data-open="false">
+    <div class="palette palette-galaxy" data-open="false">
       <button
         class="palette-btn"
         type="button"
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-controls="palette-panel"
-        aria-label="Color palette"
-        title="Color palette"
+        aria-label="Galaxy color palette"
+        title="Galaxy palette"
       >
-        <svg class="palette-icon-galaxy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg>
-        <svg class="palette-icon-stars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 L10.3 7.7 14 9 10.3 10.3 9 14 7.7 10.3 4 9 7.7 7.7 Z"/><path d="M17.5 4 L18.1 5.4 19.5 6 18.1 6.6 17.5 8 16.9 6.6 15.5 6 16.9 5.4 Z"/><path d="M17 14.8 L17.5 16 18.7 16.5 17.5 17 17 18.2 16.5 17 15.3 16.5 16.5 16 Z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg>
       </button>
-      <div class="palette-panel" id="palette-panel" role="dialog" aria-label="Color palette">
+      <div class="palette-panel" id="palette-panel" role="dialog" aria-label="Galaxy palette">
         <p class="palette-title">Galaxy Palette</p>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
@@ -234,11 +233,70 @@
       </div>
     </div>
 
-    <div class="spin-control" role="group" aria-label="Background spin">
-      <button type="button" class="spin-reset" aria-label="Reset spin" title="Reset spin">
+    <div class="palette palette-stars" data-open="false">
+      <button
+        class="palette-btn"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="palette-stars-panel"
+        aria-label="Star colors"
+        title="Star colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Z"/><path d="M18 14l.7 1.8L20.5 16.5l-1.8.7L18 19l-.7-1.8L15.5 16.5l1.8-.7L18 14Z"/></svg>
+      </button>
+      <div class="palette-panel" id="palette-stars-panel" role="dialog" aria-label="Star colors">
+        <p class="palette-title">Star Palette</p>
+        <div class="palette-presets">
+          <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #ffffff, #05060f);"></span>
+            <span class="swatch-name">Default</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="ice" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #9fd0ff, #070d1a);"></span>
+            <span class="swatch-name">Ice</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="ember" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #ffb46b, #120806);"></span>
+            <span class="swatch-name">Ember</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="aurora" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #7dffc4, #04120e);"></span>
+            <span class="swatch-name">Aurora</span>
+          </button>
+        </div>
+        <div class="palette-divider"></div>
+        <div class="palette-custom">
+          <span class="palette-custom-label">Custom</span>
+          <div class="custom-targets" role="group" aria-label="Choose what to edit">
+            <button type="button" class="custom-target" data-target="star" aria-pressed="true">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Stars</span>
+            </button>
+            <button type="button" class="custom-target" data-target="bg" aria-pressed="false">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Sky</span>
+            </button>
+          </div>
+          <div class="cp">
+            <div class="cp-sv" role="slider" aria-label="Saturation and brightness" tabindex="0">
+              <span class="cp-sv-thumb"></span>
+            </div>
+            <input type="range" class="cp-hue" min="0" max="360" step="1" value="0" aria-label="Hue" />
+            <div class="cp-hex-row">
+              <span class="cp-hash">#</span>
+              <input type="text" class="cp-hex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Hex color" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spin-control" role="group" aria-label="Galaxy spin">
+      <button type="button" class="spin-reset" aria-label="Reset galaxy spin" title="Reset spin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
       </button>
-      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Spin speed" />
+      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Galaxy spin speed" />
     </div>
 
     <div class="bg-toggle" role="group" aria-label="Background style">

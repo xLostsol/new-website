@@ -192,7 +192,6 @@
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
     var spinSync = null; // assigned by the spin-slider block below
-    var paletteSync = null; // assigned by the palette block below
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
       bgRoot.setAttribute("data-bg", mode);
@@ -206,7 +205,6 @@
         if (mode === "galaxy") window.__bgGalaxy.start();
         else window.__bgGalaxy.stop();
       }
-      if (paletteSync) paletteSync(); // re-aim the palette at the active mode
       if (persist) {
         try {
           localStorage.setItem("bg-mode", mode);
@@ -270,86 +268,125 @@
     });
   }
 
-  // Color palette picker. Mode-aware: in Galaxy mode it recolors the galaxy's
-  // two gradient endpoints (core -> edge); in Stars mode it recolors the
-  // starfield and long-exposure trails (bright -> faint). The custom picker is
-  // a small in-page HSV picker (saturation/brightness pad + hue slider + hex)
-  // so choosing a color is instant and themed instead of opening the OS dialog.
-  var palette = document.querySelector(".palette");
-  if (palette) {
-    var THEMES = {
-      galaxy: {
-        title: "Galaxy Palette",
-        aria: "Galaxy color palette",
-        labelIn: "Core",
-        labelOut: "Edge",
-        presets: {
-          default: { in: "#e39b00", out: "#6432ff" },
-          cool: { in: "#2fd6e6", out: "#2a48d8" },
-          warm: { in: "#ffb42a", out: "#e6478c" },
-          aurora: { in: "#3ce69b", out: "#9a5cff" },
-        },
-      },
-      stars: {
-        title: "Stars Palette",
-        aria: "Stars color palette",
-        labelIn: "Bright",
-        labelOut: "Faint",
-        presets: {
-          default: { in: "#ffffff", out: "#9ab4ff" },
-          cool: { in: "#cfe0ff", out: "#5e7bff" },
-          warm: { in: "#fff0d4", out: "#ff9a5c" },
-          aurora: { in: "#c7ffe9", out: "#9a7bff" },
-        },
-      },
+  // ----- Color math (hex <-> HSV), shared by every in-page color picker -----
+  var clamp01 = function (n) {
+    return n < 0 ? 0 : n > 1 ? 1 : n;
+  };
+  var hexToRgb = function (hex) {
+    hex = String(hex).replace("#", "");
+    if (hex.length === 3) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    var n = parseInt(hex, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  };
+  var rgbToHex = function (r, g, b) {
+    var h = function (x) {
+      x = Math.max(0, Math.min(255, Math.round(x))).toString(16);
+      return x.length < 2 ? "0" + x : x;
     };
+    return "#" + h(r) + h(g) + h(b);
+  };
+  var rgbToHsv = function (r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var d = max - min;
+    var hh = 0;
+    if (d) {
+      if (max === r) hh = ((g - b) / d) % 6;
+      else if (max === g) hh = (b - r) / d + 2;
+      else hh = (r - g) / d + 4;
+      hh *= 60;
+      if (hh < 0) hh += 360;
+    }
+    return { h: hh, s: max === 0 ? 0 : d / max, v: max };
+  };
+  var hsvToHex = function (h, s, v) {
+    var c = v * s;
+    var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    var m = v - c;
+    var r = 0;
+    var g = 0;
+    var b = 0;
+    if (h < 60) {
+      r = c;
+      g = x;
+    } else if (h < 120) {
+      r = x;
+      g = c;
+    } else if (h < 180) {
+      g = c;
+      b = x;
+    } else if (h < 240) {
+      g = x;
+      b = c;
+    } else if (h < 300) {
+      r = x;
+      b = c;
+    } else {
+      r = c;
+      b = x;
+    }
+    return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
+  };
+  var hexToHsv = function (hex) {
+    var c = hexToRgb(hex);
+    return rgbToHsv(c.r, c.g, c.b);
+  };
+
+  // Wire up a color-palette popover. Both the galaxy palette (core/edge
+  // gradient) and the star palette (sky/star) share this: presets in a grid,
+  // plus a small in-page HSV picker (saturation/brightness pad + hue slider +
+  // hex) so choosing a color is instant and themed instead of opening the OS
+  // color dialog. The set of editable colors ("targets") is read from the
+  // markup's .custom-target buttons, so a palette can edit any number of them.
+  //
+  // cfg = { presets: { name: { <target>: hex, ... } }, defaultName,
+  //         storageName, storageColors, apply: function (colorsByTarget) }
+  var setupPalette = function (palette, cfg) {
     var paletteBtn = palette.querySelector(".palette-btn");
     var swatches = palette.querySelectorAll(".palette-swatch");
-    var titleEl = palette.querySelector(".palette-title");
+    var sv = palette.querySelector(".cp-sv");
+    var svThumb = palette.querySelector(".cp-sv-thumb");
+    var hue = palette.querySelector(".cp-hue");
+    var hexInput = palette.querySelector(".cp-hex");
+    var targets = palette.querySelectorAll(".custom-target");
 
-    var modeName = function () {
-      return document.documentElement.getAttribute("data-bg") === "galaxy"
-        ? "galaxy"
-        : "stars";
-    };
-    var theme = function () {
-      return THEMES[modeName()];
-    };
-    var keyName = function () {
-      return modeName() + "-palette";
-    };
-    var keyColors = function () {
-      return modeName() + "-colors";
-    };
+    // The colors this palette edits, in markup order (e.g. ["in","out"] or
+    // ["star","bg"]); the first is selected for editing initially.
+    var targetKeys = [];
+    targets.forEach(function (b) {
+      targetKeys.push(b.getAttribute("data-target"));
+    });
+    var activeTarget = targetKeys[0];
 
-    // Send the chosen endpoints to whichever renderer the current mode drives.
-    var applyColors = function (inHex, outHex) {
-      if (modeName() === "galaxy") {
-        if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
-          window.__bgGalaxy.setColors(inHex, outHex);
-        }
-      } else {
-        if (window.__bgStars && window.__bgStars.setColors) {
-          window.__bgStars.setColors(inHex, outHex);
-        }
-        // Tint the calm CSS starfield too (what's visible outside immersive)
-        var root = document.documentElement;
-        root.style.setProperty("--star-color", inHex);
-        var f = hexToRgb(outHex);
-        root.style.setProperty(
-          "--star-glow",
-          "rgba(" + f.r + "," + f.g + "," + f.b + ",0.55)"
-        );
-      }
+    // Each target's color, held as HSV so the picker can edit it directly.
+    var endpoints = {};
+
+    var hexOf = function (t) {
+      var c = endpoints[t];
+      return hsvToHex(c.h, c.s, c.v);
+    };
+    // Snapshot every target's current hex, keyed by target name.
+    var colorsObj = function () {
+      var o = {};
+      targetKeys.forEach(function (k) {
+        o[k] = hexOf(k);
+      });
+      return o;
     };
 
-    var persistPalette = function (name, inHex, outHex) {
+    var applyColors = function () {
+      cfg.apply(colorsObj());
+    };
+
+    var persistPalette = function (name) {
       try {
-        localStorage.setItem(keyName(), name);
-        localStorage.setItem(
-          keyColors(),
-          JSON.stringify({ in: inHex, out: outHex })
-        );
+        localStorage.setItem(cfg.storageName, name);
+        localStorage.setItem(cfg.storageColors, JSON.stringify(colorsObj()));
       } catch (e) {}
     };
 
@@ -363,93 +400,7 @@
       });
     };
 
-    // ----- Color math (hex <-> HSV) for the in-page picker -----
-    var clamp01 = function (n) {
-      return n < 0 ? 0 : n > 1 ? 1 : n;
-    };
-    var hexToRgb = function (hex) {
-      hex = String(hex).replace("#", "");
-      if (hex.length === 3) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-      }
-      var n = parseInt(hex, 16);
-      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-    };
-    var rgbToHex = function (r, g, b) {
-      var h = function (x) {
-        x = Math.max(0, Math.min(255, Math.round(x))).toString(16);
-        return x.length < 2 ? "0" + x : x;
-      };
-      return "#" + h(r) + h(g) + h(b);
-    };
-    var rgbToHsv = function (r, g, b) {
-      r /= 255;
-      g /= 255;
-      b /= 255;
-      var max = Math.max(r, g, b);
-      var min = Math.min(r, g, b);
-      var d = max - min;
-      var hh = 0;
-      if (d) {
-        if (max === r) hh = ((g - b) / d) % 6;
-        else if (max === g) hh = (b - r) / d + 2;
-        else hh = (r - g) / d + 4;
-        hh *= 60;
-        if (hh < 0) hh += 360;
-      }
-      return { h: hh, s: max === 0 ? 0 : d / max, v: max };
-    };
-    var hsvToHex = function (h, s, v) {
-      var c = v * s;
-      var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-      var m = v - c;
-      var r = 0;
-      var g = 0;
-      var b = 0;
-      if (h < 60) {
-        r = c;
-        g = x;
-      } else if (h < 120) {
-        r = x;
-        g = c;
-      } else if (h < 180) {
-        g = c;
-        b = x;
-      } else if (h < 240) {
-        g = x;
-        b = c;
-      } else if (h < 300) {
-        r = x;
-        b = c;
-      } else {
-        r = c;
-        b = x;
-      }
-      return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
-    };
-    var hexToHsv = function (hex) {
-      var c = hexToRgb(hex);
-      return rgbToHsv(c.r, c.g, c.b);
-    };
-
-    // ----- Custom picker elements + state -----
-    var sv = palette.querySelector(".cp-sv");
-    var svThumb = palette.querySelector(".cp-sv-thumb");
-    var hue = palette.querySelector(".cp-hue");
-    var hexInput = palette.querySelector(".cp-hex");
-    var targets = palette.querySelectorAll(".custom-target");
-    var endpoints = {
-      in: { h: 0, s: 1, v: 1 },
-      out: { h: 0, s: 1, v: 1 },
-    };
-    var activeTarget = "in";
-
-    var hexOf = function (t) {
-      var c = endpoints[t];
-      return hsvToHex(c.h, c.s, c.v);
-    };
-
-    // Paint the pad/slider/hex/chips from the active endpoint's HSV. Pass
+    // Paint the pad/slider/hex/chips from the active target's HSV. Pass
     // skipHex while the user is typing so the field isn't rewritten mid-edit.
     var renderPicker = function (skipHex) {
       var c = endpoints[activeTarget];
@@ -473,56 +424,33 @@
 
     var applyLive = function () {
       markSelected("custom");
-      applyColors(hexOf("in"), hexOf("out"));
+      applyColors();
     };
     var persistNow = function () {
-      persistPalette("custom", hexOf("in"), hexOf("out"));
+      persistPalette("custom");
     };
 
-    // Load the active mode's saved palette into the picker and apply it. Also
-    // restyles the panel for the mode: title, preset chips, and the endpoint
-    // labels (Core/Edge for the galaxy, Bright/Faint for the stars).
-    var loadTheme = function () {
-      var t = theme();
-      if (titleEl) titleEl.textContent = t.title;
-      if (paletteBtn) paletteBtn.setAttribute("aria-label", t.aria);
-      swatches.forEach(function (s) {
-        var p = t.presets[s.getAttribute("data-palette")];
-        var chip = s.querySelector(".swatch-chip");
-        if (p && chip) {
-          chip.style.background =
-            "linear-gradient(135deg, " + p.in + ", " + p.out + ")";
-        }
-      });
-      targets.forEach(function (b) {
-        var nm = b.querySelector(".custom-target-name");
-        if (nm) {
-          nm.textContent =
-            b.getAttribute("data-target") === "in" ? t.labelIn : t.labelOut;
-        }
-        b.setAttribute(
-          "aria-pressed",
-          String(b.getAttribute("data-target") === "in")
-        );
-      });
-      activeTarget = "in";
-
-      var savedName = "default";
-      var savedColors = t.presets.default;
-      try {
-        var sn = localStorage.getItem(keyName());
-        if (sn) savedName = sn;
-        var scStored = JSON.parse(localStorage.getItem(keyColors()));
-        if (scStored && scStored.in && scStored.out) savedColors = scStored;
-      } catch (e) {}
-      endpoints.in = hexToHsv(savedColors.in);
-      endpoints.out = hexToHsv(savedColors.out);
-      markSelected(savedName);
-      renderPicker();
-      applyColors(savedColors.in, savedColors.out);
-    };
-    paletteSync = loadTheme; // let applyBgMode re-aim the palette on mode change
-    loadTheme();
+    // Restore the saved palette (preset default if none saved)
+    var savedName = cfg.defaultName;
+    var savedColors = cfg.presets[cfg.defaultName];
+    try {
+      var sn = localStorage.getItem(cfg.storageName);
+      if (sn) savedName = sn;
+      var scStored = JSON.parse(localStorage.getItem(cfg.storageColors));
+      if (scStored) {
+        var ok = true;
+        targetKeys.forEach(function (k) {
+          if (!scStored[k]) ok = false;
+        });
+        if (ok) savedColors = scStored;
+      }
+    } catch (e) {}
+    targetKeys.forEach(function (k) {
+      endpoints[k] = hexToHsv(savedColors[k]);
+    });
+    markSelected(savedName);
+    renderPicker();
+    applyColors();
 
     var setOpen = function (open) {
       palette.setAttribute("data-open", String(open));
@@ -539,18 +467,19 @@
     swatches.forEach(function (s) {
       s.addEventListener("click", function () {
         var name = s.getAttribute("data-palette");
-        var p = theme().presets[name];
+        var p = cfg.presets[name];
         if (!p) return;
-        endpoints.in = hexToHsv(p.in);
-        endpoints.out = hexToHsv(p.out);
+        targetKeys.forEach(function (k) {
+          endpoints[k] = hexToHsv(p[k]);
+        });
         markSelected(name);
         renderPicker();
-        applyColors(p.in, p.out);
-        persistPalette(name, p.in, p.out);
+        applyColors();
+        persistPalette(name);
       });
     });
 
-    // Choose which endpoint (core / edge) the picker edits
+    // Choose which color the picker edits
     targets.forEach(function (b) {
       b.addEventListener("click", function () {
         activeTarget = b.getAttribute("data-target");
@@ -654,6 +583,51 @@
       if (e.key === "Escape" && palette.getAttribute("data-open") === "true") {
         setOpen(false);
       }
+    });
+  };
+
+  // Galaxy palette (galaxy mode): presets feed the galaxy's two gradient
+  // endpoints (core -> edge). galaxy3d.js reads the saved colors itself, so
+  // this drives only live changes.
+  var galaxyPalette = document.querySelector(".palette-galaxy");
+  if (galaxyPalette) {
+    setupPalette(galaxyPalette, {
+      presets: {
+        default: { in: "#e39b00", out: "#6432ff" },
+        cool: { in: "#2fd6e6", out: "#2a48d8" },
+        warm: { in: "#ffb42a", out: "#e6478c" },
+        aurora: { in: "#3ce69b", out: "#9a5cff" },
+      },
+      defaultName: "default",
+      storageName: "galaxy-palette",
+      storageColors: "galaxy-colors",
+      apply: function (c) {
+        if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
+          window.__bgGalaxy.setColors(c.in, c.out);
+        }
+      },
+    });
+  }
+
+  // Star palette (immersive Stars play mode): presets set the sky background
+  // and the star color of the long-exposure trails.
+  var starsPalette = document.querySelector(".palette-stars");
+  if (starsPalette) {
+    setupPalette(starsPalette, {
+      presets: {
+        default: { star: "#ffffff", bg: "#05060f" },
+        ice: { star: "#9fd0ff", bg: "#070d1a" },
+        ember: { star: "#ffb46b", bg: "#120806" },
+        aurora: { star: "#7dffc4", bg: "#04120e" },
+      },
+      defaultName: "default",
+      storageName: "stars-palette",
+      storageColors: "stars-colors",
+      apply: function (c) {
+        if (window.__bgStars && window.__bgStars.setColors) {
+          window.__bgStars.setColors(c.bg, c.star);
+        }
+      },
     });
   }
 
