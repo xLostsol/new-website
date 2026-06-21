@@ -191,6 +191,7 @@
   var bgButtons = document.querySelectorAll(".bg-toggle-btn");
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
+    var spinSync = null; // assigned by the spin-slider block below
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
       bgRoot.setAttribute("data-bg", mode);
@@ -211,19 +212,28 @@
       }
     };
 
-    // Immersive "play" mode: hide the resume UI so the galaxy can be played
-    // with freely. Entered by pressing Galaxy again while already in galaxy.
+    // Immersive "play" mode: hide the resume UI so the background can be played
+    // with freely. Entered by pressing the active mode's button a second time:
+    // Galaxy -> spinning galaxy, Stars -> long-exposure star trails.
     var hintEl = null;
     var setImmersive = function (on) {
       bgRoot.classList.toggle("immersive", on);
+      var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
+      // The star-trail renderer only runs in immersive Stars mode.
+      if (window.__bgStars) {
+        if (on && stars) window.__bgStars.start();
+        else window.__bgStars.stop();
+      }
+      if (spinSync) spinSync(); // aim the spin slider at the active mode
       if (on) {
         if (!hintEl) {
           hintEl = document.createElement("div");
           hintEl.className = "bg-immersive-hint";
-          hintEl.textContent =
-            "Drag to spin · slider sets a steady spin · Esc or Galaxy to exit";
           document.body.appendChild(hintEl);
         }
+        hintEl.textContent = stars
+          ? "Slider spins the star trails · Esc or Stars to exit"
+          : "Drag to spin · slider sets a steady spin · Esc or Galaxy to exit";
         hintEl.classList.remove("show");
         void hintEl.offsetWidth; // restart the fade animation
         hintEl.classList.add("show");
@@ -236,8 +246,8 @@
     bgButtons.forEach(function (b) {
       b.addEventListener("click", function () {
         var target = b.getAttribute("data-bg-mode");
-        // Pressing Galaxy while already in galaxy toggles immersive play mode
-        if (target === "galaxy" && bgRoot.getAttribute("data-bg") === "galaxy") {
+        // Pressing the already-active mode's button toggles immersive play mode
+        if (target === bgRoot.getAttribute("data-bg")) {
           setImmersive(!bgRoot.classList.contains("immersive"));
         } else {
           setImmersive(false);
@@ -563,33 +573,57 @@
     });
   }
 
-  // Galaxy spin slider (immersive play mode only). Dials in a continuous,
-  // non-decaying spin so the galaxy keeps turning at a chosen speed; the reset
-  // button recenters it to a stop. The value persists across pages and reloads.
+  // Immersive spin slider. It drives whichever play mode is active: the galaxy
+  // in Galaxy mode, the star trails in Stars mode. Each mode keeps its own saved
+  // speed, and the slider re-syncs to the active mode when immersive is entered
+  // (see setImmersive). The reset button recenters the slider to a stop.
   var spin = document.querySelector(".spin-control");
   if (spin) {
     var spinSlider = spin.querySelector(".spin-slider");
     var spinReset = spin.querySelector(".spin-reset");
 
+    var spinIsGalaxy = function () {
+      return document.documentElement.getAttribute("data-bg") === "galaxy";
+    };
+    var spinKey = function () {
+      return spinIsGalaxy() ? "galaxy-spin" : "stars-spin";
+    };
+    var spinTarget = function () {
+      return spinIsGalaxy() ? window.__bgGalaxy : window.__bgStars;
+    };
+    // Default speed when a mode has no saved value: the galaxy rests, the star
+    // trails drift gently so they read the moment you enter.
+    var spinDefault = function () {
+      return spinIsGalaxy() ? 0 : 40;
+    };
+
+    var readSaved = function () {
+      var v = spinDefault();
+      try {
+        var ss = parseInt(localStorage.getItem(spinKey()), 10);
+        if (!isNaN(ss)) v = Math.max(-100, Math.min(100, ss));
+      } catch (e) {}
+      return v;
+    };
+
     var applySpin = function (v, persist) {
-      if (window.__bgGalaxy && window.__bgGalaxy.setSpin) {
-        window.__bgGalaxy.setSpin(v);
-      }
+      var t = spinTarget();
+      if (t && t.setSpin) t.setSpin(v);
       if (persist) {
         try {
-          localStorage.setItem("galaxy-spin", String(v));
+          localStorage.setItem(spinKey(), String(v));
         } catch (e) {}
       }
     };
 
-    // Restore the saved spin (centered/stopped if none saved)
-    var savedSpin = 0;
-    try {
-      var ss = parseInt(localStorage.getItem("galaxy-spin"), 10);
-      if (!isNaN(ss)) savedSpin = Math.max(-100, Math.min(100, ss));
-    } catch (e) {}
-    if (spinSlider) spinSlider.value = String(savedSpin);
-    applySpin(savedSpin, false);
+    // Point the slider at the active mode's saved speed and apply it.
+    var syncSpin = function () {
+      var v = readSaved();
+      if (spinSlider) spinSlider.value = String(v);
+      applySpin(v, false);
+    };
+    spinSync = syncSpin; // let setImmersive re-sync when the mode changes
+    syncSpin();
 
     if (spinSlider) {
       spinSlider.addEventListener("input", function () {

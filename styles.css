@@ -140,6 +140,25 @@ html[data-bg="stars"] .space-canvas {
   pointer-events: none;
 }
 
+/* Long-exposure star-trail canvas (immersive Stars play mode only) */
+.startrails-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.startrails-canvas.show {
+  opacity: 1;
+}
+
+/* In immersive Stars mode the trails own the sky; pause the calm starfield */
+html.immersive[data-bg="stars"] .stars {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
 .star {
   position: absolute;
   background: #fff;
