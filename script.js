@@ -192,6 +192,7 @@
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
     var spinSync = null; // assigned by the spin-slider block below
+    var paletteSync = null; // assigned by the palette block below
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
       bgRoot.setAttribute("data-bg", mode);
@@ -205,6 +206,7 @@
         if (mode === "galaxy") window.__bgGalaxy.start();
         else window.__bgGalaxy.stop();
       }
+      if (paletteSync) paletteSync(); // re-aim the palette at the active mode
       if (persist) {
         try {
           localStorage.setItem("bg-mode", mode);
@@ -268,32 +270,84 @@
     });
   }
 
-  // Galaxy color palette picker (galaxy mode only). Presets feed the galaxy's
-  // two gradient endpoints (core -> edge). The custom picker is a small in-page
-  // HSV picker (saturation/brightness pad + hue slider + hex) so choosing a
-  // color is instant and themed instead of opening the OS color dialog.
+  // Color palette picker. Mode-aware: in Galaxy mode it recolors the galaxy's
+  // two gradient endpoints (core -> edge); in Stars mode it recolors the
+  // starfield and long-exposure trails (bright -> faint). The custom picker is
+  // a small in-page HSV picker (saturation/brightness pad + hue slider + hex)
+  // so choosing a color is instant and themed instead of opening the OS dialog.
   var palette = document.querySelector(".palette");
   if (palette) {
-    var PALETTES = {
-      default: { in: "#e39b00", out: "#6432ff" },
-      cool: { in: "#2fd6e6", out: "#2a48d8" },
-      warm: { in: "#ffb42a", out: "#e6478c" },
-      aurora: { in: "#3ce69b", out: "#9a5cff" },
+    var THEMES = {
+      galaxy: {
+        title: "Galaxy Palette",
+        aria: "Galaxy color palette",
+        labelIn: "Core",
+        labelOut: "Edge",
+        presets: {
+          default: { in: "#e39b00", out: "#6432ff" },
+          cool: { in: "#2fd6e6", out: "#2a48d8" },
+          warm: { in: "#ffb42a", out: "#e6478c" },
+          aurora: { in: "#3ce69b", out: "#9a5cff" },
+        },
+      },
+      stars: {
+        title: "Stars Palette",
+        aria: "Stars color palette",
+        labelIn: "Bright",
+        labelOut: "Faint",
+        presets: {
+          default: { in: "#ffffff", out: "#9ab4ff" },
+          cool: { in: "#cfe0ff", out: "#5e7bff" },
+          warm: { in: "#fff0d4", out: "#ff9a5c" },
+          aurora: { in: "#c7ffe9", out: "#9a7bff" },
+        },
+      },
     };
     var paletteBtn = palette.querySelector(".palette-btn");
     var swatches = palette.querySelectorAll(".palette-swatch");
+    var titleEl = palette.querySelector(".palette-title");
 
+    var modeName = function () {
+      return document.documentElement.getAttribute("data-bg") === "galaxy"
+        ? "galaxy"
+        : "stars";
+    };
+    var theme = function () {
+      return THEMES[modeName()];
+    };
+    var keyName = function () {
+      return modeName() + "-palette";
+    };
+    var keyColors = function () {
+      return modeName() + "-colors";
+    };
+
+    // Send the chosen endpoints to whichever renderer the current mode drives.
     var applyColors = function (inHex, outHex) {
-      if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
-        window.__bgGalaxy.setColors(inHex, outHex);
+      if (modeName() === "galaxy") {
+        if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
+          window.__bgGalaxy.setColors(inHex, outHex);
+        }
+      } else {
+        if (window.__bgStars && window.__bgStars.setColors) {
+          window.__bgStars.setColors(inHex, outHex);
+        }
+        // Tint the calm CSS starfield too (what's visible outside immersive)
+        var root = document.documentElement;
+        root.style.setProperty("--star-color", inHex);
+        var f = hexToRgb(outHex);
+        root.style.setProperty(
+          "--star-glow",
+          "rgba(" + f.r + "," + f.g + "," + f.b + ",0.55)"
+        );
       }
     };
 
     var persistPalette = function (name, inHex, outHex) {
       try {
-        localStorage.setItem("galaxy-palette", name);
+        localStorage.setItem(keyName(), name);
         localStorage.setItem(
-          "galaxy-colors",
+          keyColors(),
           JSON.stringify({ in: inHex, out: outHex })
         );
       } catch (e) {}
@@ -425,20 +479,50 @@
       persistPalette("custom", hexOf("in"), hexOf("out"));
     };
 
-    // Restore the saved palette (default if none saved)
-    var savedName = "default";
-    var savedColors = PALETTES.default;
-    try {
-      var sn = localStorage.getItem("galaxy-palette");
-      if (sn) savedName = sn;
-      var scStored = JSON.parse(localStorage.getItem("galaxy-colors"));
-      if (scStored && scStored.in && scStored.out) savedColors = scStored;
-    } catch (e) {}
-    endpoints.in = hexToHsv(savedColors.in);
-    endpoints.out = hexToHsv(savedColors.out);
-    markSelected(savedName);
-    renderPicker();
-    applyColors(savedColors.in, savedColors.out);
+    // Load the active mode's saved palette into the picker and apply it. Also
+    // restyles the panel for the mode: title, preset chips, and the endpoint
+    // labels (Core/Edge for the galaxy, Bright/Faint for the stars).
+    var loadTheme = function () {
+      var t = theme();
+      if (titleEl) titleEl.textContent = t.title;
+      if (paletteBtn) paletteBtn.setAttribute("aria-label", t.aria);
+      swatches.forEach(function (s) {
+        var p = t.presets[s.getAttribute("data-palette")];
+        var chip = s.querySelector(".swatch-chip");
+        if (p && chip) {
+          chip.style.background =
+            "linear-gradient(135deg, " + p.in + ", " + p.out + ")";
+        }
+      });
+      targets.forEach(function (b) {
+        var nm = b.querySelector(".custom-target-name");
+        if (nm) {
+          nm.textContent =
+            b.getAttribute("data-target") === "in" ? t.labelIn : t.labelOut;
+        }
+        b.setAttribute(
+          "aria-pressed",
+          String(b.getAttribute("data-target") === "in")
+        );
+      });
+      activeTarget = "in";
+
+      var savedName = "default";
+      var savedColors = t.presets.default;
+      try {
+        var sn = localStorage.getItem(keyName());
+        if (sn) savedName = sn;
+        var scStored = JSON.parse(localStorage.getItem(keyColors()));
+        if (scStored && scStored.in && scStored.out) savedColors = scStored;
+      } catch (e) {}
+      endpoints.in = hexToHsv(savedColors.in);
+      endpoints.out = hexToHsv(savedColors.out);
+      markSelected(savedName);
+      renderPicker();
+      applyColors(savedColors.in, savedColors.out);
+    };
+    paletteSync = loadTheme; // let applyBgMode re-aim the palette on mode change
+    loadTheme();
 
     var setOpen = function (open) {
       palette.setAttribute("data-open", String(open));
@@ -455,7 +539,7 @@
     swatches.forEach(function (s) {
       s.addEventListener("click", function () {
         var name = s.getAttribute("data-palette");
-        var p = PALETTES[name];
+        var p = theme().presets[name];
         if (!p) return;
         endpoints.in = hexToHsv(p.in);
         endpoints.out = hexToHsv(p.out);

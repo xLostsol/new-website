@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -164,12 +164,13 @@
         aria-haspopup="dialog"
         aria-expanded="false"
         aria-controls="palette-panel"
-        aria-label="Galaxy color palette"
-        title="Galaxy palette"
+        aria-label="Color palette"
+        title="Color palette"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg>
+        <svg class="palette-icon-galaxy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg>
+        <svg class="palette-icon-stars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 L10.3 7.7 14 9 10.3 10.3 9 14 7.7 10.3 4 9 7.7 7.7 Z"/><path d="M17.5 4 L18.1 5.4 19.5 6 18.1 6.6 17.5 8 16.9 6.6 15.5 6 16.9 5.4 Z"/><path d="M17 14.8 L17.5 16 18.7 16.5 17.5 17 17 18.2 16.5 17 15.3 16.5 16.5 16 Z"/></svg>
       </button>
-      <div class="palette-panel" id="palette-panel" role="dialog" aria-label="Galaxy palette">
+      <div class="palette-panel" id="palette-panel" role="dialog" aria-label="Color palette">
         <p class="palette-title">Galaxy Palette</p>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
@@ -216,11 +217,11 @@
       </div>
     </div>
 
-    <div class="spin-control" role="group" aria-label="Galaxy spin">
-      <button type="button" class="spin-reset" aria-label="Reset galaxy spin" title="Reset spin">
+    <div class="spin-control" role="group" aria-label="Background spin">
+      <button type="button" class="spin-reset" aria-label="Reset spin" title="Reset spin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
       </button>
-      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Galaxy spin speed" />
+      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Spin speed" />
     </div>
 
     <div class="bg-toggle" role="group" aria-label="Background style">
@@ -258,8 +259,8 @@
       </div>
     </footer>
 
-    <script src="startrails.js?v=1" defer></script>
-    <script src="script.js?v=12" defer></script>
+    <script src="startrails.js?v=2" defer></script>
+    <script src="script.js?v=13" defer></script>
     <script type="module" src="galaxy3d.js?v=15"></script>
   </body>
 </html>

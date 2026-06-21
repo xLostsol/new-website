@@ -46,6 +46,33 @@
       if (!isNaN(s0)) spinRate = (clamp(s0, -100, 100) / 100) * SPIN_MAX;
     } catch (e) {}
 
+    // Trail colors: the brightest stars take colBright, the faintest colFaint,
+    // and each star is a mix by its own brightness. The Stars palette recolors
+    // these live via setColors(); the saved choice is restored on first build.
+    var colBright = { r: 255, g: 255, b: 255 };
+    var colFaint = { r: 154, g: 180, b: 255 };
+    var hexRgb = function (hex) {
+      hex = String(hex).replace("#", "");
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      var n = parseInt(hex, 16);
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    };
+    try {
+      var sc0 = JSON.parse(localStorage.getItem("stars-colors"));
+      if (sc0 && sc0.in && sc0.out) {
+        colBright = hexRgb(sc0.in);
+        colFaint = hexRgb(sc0.out);
+      }
+    } catch (e) {}
+    var mixCol = function (bf) {
+      var r = Math.round(colFaint.r + (colBright.r - colFaint.r) * bf);
+      var g = Math.round(colFaint.g + (colBright.g - colFaint.g) * bf);
+      var b = Math.round(colFaint.b + (colBright.b - colFaint.b) * bf);
+      return r + "," + g + "," + b;
+    };
+
     function sizeCanvas() {
       dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       w = window.innerWidth;
@@ -71,17 +98,13 @@
         var r = Rmax * Math.sqrt(Math.random()); // uniform across the disk
         var a0 = Math.random() * Math.PI * 2;
         var b = Math.pow(Math.random(), 1.7); // mostly dim, a few bright
-        var tone = Math.random();
-        var col;
-        if (tone < 0.62) col = "255,255,255";
-        else if (tone < 0.88) col = "186,208,255"; // pale blue
-        else col = "255,221,184"; // warm
         stars.push({
           r: r,
           a0: a0,
           size: 0.6 + b * 1.6,
           br: 0.35 + b * 0.65,
-          col: col,
+          bf: b, // brightness factor, drives the bright <-> faint color mix
+          col: mixCol(b),
         });
       }
     }
@@ -212,7 +235,23 @@
       spinRate = (n / 100) * SPIN_MAX;
     }
 
-    return { start: start, stop: stop, setSpin: setSpin };
+    // Recolor the field live: brightHex for the brightest stars, faintHex for
+    // the dimmest, mixed per star. Safe before build (it takes hold when the
+    // stars are first generated).
+    function setColors(brightHex, faintHex) {
+      if (brightHex) colBright = hexRgb(brightHex);
+      if (faintHex) colFaint = hexRgb(faintHex);
+      for (var i = 0; i < stars.length; i++) {
+        stars[i].col = mixCol(stars[i].bf);
+      }
+    }
+
+    return {
+      start: start,
+      stop: stop,
+      setSpin: setSpin,
+      setColors: setColors,
+    };
   })();
 
   window.__bgStars = StarTrails;
