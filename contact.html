@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=11" />
+    <link rel="stylesheet" href="styles.css?v=12" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -157,6 +157,55 @@
       </section>
     </main>
 
+    <div class="palette" data-open="false">
+      <button
+        class="palette-btn"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="palette-panel"
+        aria-label="Galaxy color palette"
+        title="Galaxy palette"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.24-.27-.39-.62-.39-1 0-.83.67-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8Z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="10.5" r="1"/></svg>
+      </button>
+      <div class="palette-panel" id="palette-panel" role="dialog" aria-label="Galaxy palette">
+        <p class="palette-title">Galaxy Palette</p>
+        <div class="palette-presets">
+          <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #e39b00, #6432ff);"></span>
+            <span class="swatch-name">Default</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="cool" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #2fd6e6, #2a48d8);"></span>
+            <span class="swatch-name">Cool</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="warm" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #ffb42a, #e6478c);"></span>
+            <span class="swatch-name">Warm</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="aurora" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #3ce69b, #9a5cff);"></span>
+            <span class="swatch-name">Aurora</span>
+          </button>
+        </div>
+        <div class="palette-divider"></div>
+        <div class="palette-custom">
+          <span class="palette-custom-label">Custom</span>
+          <span class="custom-pickers">
+            <label class="custom-swatch" title="Core color">
+              <input type="color" data-custom="in" value="#e39b00" aria-label="Galaxy core color" />
+              <span>Core</span>
+            </label>
+            <label class="custom-swatch" title="Edge color">
+              <input type="color" data-custom="out" value="#6432ff" aria-label="Galaxy edge color" />
+              <span>Edge</span>
+            </label>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <div class="bg-toggle" role="group" aria-label="Background style">
       <button type="button" class="bg-toggle-btn" data-bg-mode="stars" aria-pressed="true" title="Calm starry background">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L10.2 5.8 14.5 8 10.2 10.2 8 14.5 5.8 10.2 1.5 8 5.8 5.8 Z"/></svg>
@@ -192,7 +241,7 @@
       </div>
     </footer>
 
-    <script src="script.js?v=6" defer></script>
-    <script type="module" src="galaxy3d.js?v=11"></script>
+    <script src="script.js?v=7" defer></script>
+    <script type="module" src="galaxy3d.js?v=13"></script>
   </body>
 </html>

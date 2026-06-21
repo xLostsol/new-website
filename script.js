@@ -252,4 +252,114 @@
       }
     });
   }
+
+  // Galaxy color palette picker (galaxy mode only). Each preset feeds the
+  // galaxy's two gradient endpoints (core -> edge); the choice persists and is
+  // re-applied by galaxy3d.js on build.
+  var palette = document.querySelector(".palette");
+  if (palette) {
+    var PALETTES = {
+      default: { in: "#e39b00", out: "#6432ff" },
+      cool: { in: "#2fd6e6", out: "#2a48d8" },
+      warm: { in: "#ffb42a", out: "#e6478c" },
+      aurora: { in: "#3ce69b", out: "#9a5cff" },
+    };
+    var paletteBtn = palette.querySelector(".palette-btn");
+    var swatches = palette.querySelectorAll(".palette-swatch");
+    var customIn = palette.querySelector('input[data-custom="in"]');
+    var customOut = palette.querySelector('input[data-custom="out"]');
+
+    var applyColors = function (inHex, outHex) {
+      if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
+        window.__bgGalaxy.setColors(inHex, outHex);
+      }
+    };
+
+    var persistPalette = function (name, inHex, outHex) {
+      try {
+        localStorage.setItem("galaxy-palette", name);
+        localStorage.setItem(
+          "galaxy-colors",
+          JSON.stringify({ in: inHex, out: outHex })
+        );
+      } catch (e) {}
+    };
+
+    // Highlight the active preset; "custom" matches nothing, clearing them all
+    var markSelected = function (name) {
+      swatches.forEach(function (s) {
+        s.setAttribute(
+          "aria-pressed",
+          String(s.getAttribute("data-palette") === name)
+        );
+      });
+    };
+
+    var syncCustomInputs = function (inHex, outHex) {
+      if (customIn) customIn.value = inHex;
+      if (customOut) customOut.value = outHex;
+    };
+
+    // Restore the saved palette (default if none saved)
+    var savedName = "default";
+    var savedColors = PALETTES.default;
+    try {
+      var sn = localStorage.getItem("galaxy-palette");
+      if (sn) savedName = sn;
+      var sc = JSON.parse(localStorage.getItem("galaxy-colors"));
+      if (sc && sc.in && sc.out) savedColors = sc;
+    } catch (e) {}
+    markSelected(savedName);
+    syncCustomInputs(savedColors.in, savedColors.out);
+    applyColors(savedColors.in, savedColors.out);
+
+    var setOpen = function (open) {
+      palette.setAttribute("data-open", String(open));
+      if (paletteBtn) paletteBtn.setAttribute("aria-expanded", String(open));
+    };
+
+    if (paletteBtn) {
+      paletteBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setOpen(palette.getAttribute("data-open") !== "true");
+      });
+    }
+
+    swatches.forEach(function (s) {
+      s.addEventListener("click", function () {
+        var name = s.getAttribute("data-palette");
+        var p = PALETTES[name];
+        if (!p) return;
+        markSelected(name);
+        syncCustomInputs(p.in, p.out);
+        applyColors(p.in, p.out);
+        persistPalette(name, p.in, p.out);
+      });
+    });
+
+    var onCustom = function () {
+      var inHex = customIn ? customIn.value : savedColors.in;
+      var outHex = customOut ? customOut.value : savedColors.out;
+      markSelected("custom");
+      applyColors(inHex, outHex);
+      persistPalette("custom", inHex, outHex);
+    };
+    if (customIn) customIn.addEventListener("input", onCustom);
+    if (customOut) customOut.addEventListener("input", onCustom);
+
+    // Close the panel on an outside click or Escape
+    document.addEventListener("click", function (e) {
+      if (
+        palette.getAttribute("data-open") === "true" &&
+        !palette.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && palette.getAttribute("data-open") === "true") {
+        setOpen(false);
+      }
+    });
+  }
 })();

@@ -1,5 +1,8 @@
 // 3D point-cloud galaxy background, adapted from "Nova - Points" by
 // brij121e: https://codepen.io/brij121e/pen/zYaPZGY
+// Copyright (c) 2022 Brijesh Singh. Licensed under the MIT License.
+// See LICENSE-galaxy.txt for the full license and copyright notice.
+//
 // The core shimmers constantly. The whole galaxy drifts gently and can be
 // grabbed and spun by the user (with momentum), and the points are pushed
 // aside around the mouse cursor.
@@ -19,6 +22,19 @@ var Galaxy = (function () {
   var running = false;
   var renderer = null;
   var loop = null;
+  var guRef = null; // reference to the shared uniforms, for live color changes
+
+  // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
+  // here so the chosen look is in place the moment the galaxy first builds.
+  var colorIn = "#e39b00";
+  var colorOut = "#6432ff";
+  try {
+    var savedColors = JSON.parse(localStorage.getItem("galaxy-colors"));
+    if (savedColors && savedColors.in && savedColors.out) {
+      colorIn = savedColors.in;
+      colorOut = savedColors.out;
+    }
+  } catch (e) {}
 
   // Heavy one-time setup: only runs the first time the galaxy is shown
   function build() {
@@ -50,7 +66,10 @@ var Galaxy = (function () {
       uMouse: { value: new THREE.Vector2(0, 0) },
       uMouseStr: { value: 0 },
       uAspect: { value: window.innerWidth / window.innerHeight },
+      uColorIn: { value: new THREE.Color(colorIn) },
+      uColorOut: { value: new THREE.Color(colorOut) },
     };
+    guRef = gu;
 
     var BASE_DIST = 26;
     var coreMaterial;
@@ -163,7 +182,7 @@ var Galaxy = (function () {
       "#include <color_vertex>\n" +
       "float d = length(abs(position) / vec3(40., 10., 40));\n" +
       "d = clamp(d, 0., 1.);\n" +
-      "vColor = mix(vec3(227., 155., 0.), vec3(100., 50., 255.), d) / 255.;";
+      "vColor = mix(uColorIn, uColorOut, d);";
 
     // Screen-space push: after the point is projected, shove it away from the
     // cursor when it falls inside a soft radius. uMouseStr is a decaying
@@ -174,8 +193,8 @@ var Galaxy = (function () {
       "vec2 mNdc = gl_Position.xy / gl_Position.w;\n" +
       "vec2 mDiff = (mNdc - uMouse) * vec2(uAspect, 1.0);\n" +
       "float mDist = length(mDiff);\n" +
-      "if (uMouseStr > 0.001 && mDist < 0.18) {\n" +
-      "  float f = 1.0 - mDist / 0.18; f = f * f;\n" +
+      "if (uMouseStr > 0.001 && mDist < 0.10) {\n" +
+      "  float f = 1.0 - mDist / 0.10; f = f * f;\n" +
       "  vec2 mDir = mDist > 0.0001 ? normalize(mDiff) / vec2(uAspect, 1.0) : vec2(0.0);\n" +
       "  gl_Position.xy += mDir * f * 0.16 * uMouseStr * gl_Position.w;\n" +
       "}";
@@ -191,11 +210,15 @@ var Galaxy = (function () {
           shader.uniforms.uMouse = gu.uMouse;
           shader.uniforms.uMouseStr = gu.uMouseStr;
           shader.uniforms.uAspect = gu.uAspect;
+          shader.uniforms.uColorIn = gu.uColorIn;
+          shader.uniforms.uColorOut = gu.uColorOut;
           var vs =
             "uniform float time;\n" +
             "uniform vec2 uMouse;\n" +
             "uniform float uMouseStr;\n" +
             "uniform float uAspect;\n" +
+            "uniform vec3 uColorIn;\n" +
+            "uniform vec3 uColorOut;\n" +
             "attribute float sizes;\n" +
             "attribute vec4 shift;\n" +
             "varying vec3 vColor;\n" +
@@ -300,7 +323,7 @@ var Galaxy = (function () {
     var HERO_PAD_X = 80;
     var HERO_PAD_Y = 160;
     var uiEls = document.querySelectorAll(
-      "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle"
+      "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle, .palette"
     );
     var uiPadX = [];
     var uiPadY = [];
@@ -518,7 +541,18 @@ var Galaxy = (function () {
     }
   }
 
-  return { start: start, stop: stop };
+  // Change the galaxy gradient (core hex -> edge hex). Works before the galaxy
+  // is built (stored and applied on build) and live once it is running.
+  function setColors(inHex, outHex) {
+    colorIn = inHex;
+    colorOut = outHex;
+    if (guRef) {
+      guRef.uColorIn.value.set(inHex);
+      guRef.uColorOut.value.set(outHex);
+    }
+  }
+
+  return { start: start, stop: stop, setColors: setColors };
 })();
 
 window.__bgGalaxy = Galaxy;
