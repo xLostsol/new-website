@@ -616,8 +616,8 @@
     setupPalette(starsPalette, {
       presets: {
         default: { star: "#ffffff", bg: "#05060f" },
-        ice: { star: "#9fd0ff", bg: "#070d1a" },
-        ember: { star: "#ffb46b", bg: "#120806" },
+        cool: { star: "#9fd0ff", bg: "#070d1a" },
+        warm: { star: "#ffb46b", bg: "#120806" },
         aurora: { star: "#7dffc4", bg: "#04120e" },
       },
       defaultName: "default",
