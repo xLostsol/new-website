@@ -248,6 +248,11 @@
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && bgRoot.classList.contains("immersive")) {
+        // If the palette popover is open, let Escape close just the popover
+        // (handled by the palette's own listener) instead of also exiting
+        // immersive in the same keypress.
+        var openPal = document.querySelector('.palette[data-open="true"]');
+        if (openPal) return;
         setImmersive(false);
       }
     });

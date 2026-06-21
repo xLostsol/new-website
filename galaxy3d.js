@@ -192,10 +192,15 @@ var Galaxy = (function () {
       );
     });
 
+    // Color by radial distance in the disk plane: the dense core keeps the
+    // core color while the outer ring leans hard into the edge color. Mapping
+    // from ~9 (core radius) to ~37 puts the whole outer disk on the edge side,
+    // and pow(d, 0.55) pushes the mid/outer ring further toward the edge hue so
+    // changing the edge color visibly recolors the ring, not just the rim.
     var colorChunk =
       "#include <color_vertex>\n" +
-      "float d = length(abs(position) / vec3(40., 10., 40));\n" +
-      "d = clamp(d, 0., 1.);\n" +
+      "float d = clamp((length(position.xz) - 9.0) / 28.0, 0.0, 1.0);\n" +
+      "d = pow(d, 0.55);\n" +
       "vColor = mix(uColorIn, uColorOut, d);";
 
     // Screen-space push: after the point is projected, shove it away from the
@@ -323,7 +328,9 @@ var Galaxy = (function () {
       return (
         el &&
         el.closest &&
-        el.closest("a, button, input, textarea, select, label, summary, .bg-toggle")
+        el.closest(
+          "a, button, input, textarea, select, label, summary, .bg-toggle, .palette, .spin-control"
+        )
       );
     };
 
@@ -336,8 +343,9 @@ var Galaxy = (function () {
     var BASE_PAD = 14;
     var HERO_PAD_X = 80;
     var HERO_PAD_Y = 160;
+    var paletteEl = document.querySelector(".palette");
     var uiEls = document.querySelectorAll(
-      "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle, .palette"
+      "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle, .palette, .palette-panel"
     );
     var uiPadX = [];
     var uiPadY = [];
@@ -348,6 +356,14 @@ var Galaxy = (function () {
     }
     var overUI = function (x, y) {
       for (var i = 0; i < uiEls.length; i++) {
+        // The palette popover only blocks the galaxy while it is open; when
+        // closed it still has a layout box, so skip it to avoid a dead zone.
+        if (
+          uiEls[i].classList.contains("palette-panel") &&
+          (!paletteEl || paletteEl.getAttribute("data-open") !== "true")
+        ) {
+          continue;
+        }
         var r = uiEls[i].getBoundingClientRect();
         if (!r.width) continue;
         var px = uiPadX[i];
