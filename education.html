@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -174,7 +174,7 @@
       </section>
     </main>
 
-    <div class="palette" data-open="false">
+    <div class="palette palette-galaxy" data-open="false">
       <button
         class="palette-btn"
         type="button"
@@ -233,6 +233,65 @@
       </div>
     </div>
 
+    <div class="palette palette-stars" data-open="false">
+      <button
+        class="palette-btn"
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="palette-stars-panel"
+        aria-label="Star colors"
+        title="Star colors"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3Z"/><path d="M18 14l.7 1.8L20.5 16.5l-1.8.7L18 19l-.7-1.8L15.5 16.5l1.8-.7L18 14Z"/></svg>
+      </button>
+      <div class="palette-panel" id="palette-stars-panel" role="dialog" aria-label="Star colors">
+        <p class="palette-title">Star Palette</p>
+        <div class="palette-presets">
+          <button type="button" class="palette-swatch" data-palette="default" aria-pressed="true">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #ffffff, #05060f);"></span>
+            <span class="swatch-name">Default</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="ice" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #9fd0ff, #070d1a);"></span>
+            <span class="swatch-name">Ice</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="ember" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #ffb46b, #120806);"></span>
+            <span class="swatch-name">Ember</span>
+          </button>
+          <button type="button" class="palette-swatch" data-palette="aurora" aria-pressed="false">
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #7dffc4, #04120e);"></span>
+            <span class="swatch-name">Aurora</span>
+          </button>
+        </div>
+        <div class="palette-divider"></div>
+        <div class="palette-custom">
+          <span class="palette-custom-label">Custom</span>
+          <div class="custom-targets" role="group" aria-label="Choose what to edit">
+            <button type="button" class="custom-target" data-target="star" aria-pressed="true">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Stars</span>
+            </button>
+            <button type="button" class="custom-target" data-target="bg" aria-pressed="false">
+              <span class="custom-target-chip"></span>
+              <span class="custom-target-name">Sky</span>
+            </button>
+          </div>
+          <div class="cp">
+            <div class="cp-sv" role="slider" aria-label="Saturation and brightness" tabindex="0">
+              <span class="cp-sv-thumb"></span>
+            </div>
+            <input type="range" class="cp-hue" min="0" max="360" step="1" value="0" aria-label="Hue" />
+            <div class="cp-hex-row">
+              <span class="cp-hash">#</span>
+              <input type="text" class="cp-hex" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Hex color" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="spin-control" role="group" aria-label="Galaxy spin">
       <button type="button" class="spin-reset" aria-label="Reset galaxy spin" title="Reset spin">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
@@ -275,8 +334,8 @@
       </div>
     </footer>
 
-    <script src="startrails.js?v=1" defer></script>
-    <script src="script.js?v=12" defer></script>
+    <script src="startrails.js?v=2" defer></script>
+    <script src="script.js?v=13" defer></script>
     <script type="module" src="galaxy3d.js?v=15"></script>
   </body>
 </html>

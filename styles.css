@@ -1143,11 +1143,24 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   z-index: 1500;
 }
 
-/* Only relevant over the galaxy; hidden and inert on the calm starfield */
-html[data-bg="stars"] .palette {
+/* The galaxy palette only matters over the galaxy; hide it elsewhere. */
+html[data-bg="stars"] .palette-galaxy {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+/* The star palette belongs to the immersive Stars play mode only. */
+.palette-stars {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.immersive[data-bg="stars"] .palette-stars {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .palette-btn {
