@@ -52,6 +52,18 @@
       }
     } catch (e) {}
 
+    // Cached fill strings so the render loop never builds them per star/frame.
+    // restyle() refreshes them whenever the palette changes (see setColors).
+    var bgFill = "rgb(" + bgRGB + ")";
+    var fadeStyle = "rgba(" + bgRGB + "," + FADE + ")";
+    var restyle = function () {
+      bgFill = "rgb(" + bgRGB + ")";
+      fadeStyle = "rgba(" + bgRGB + "," + FADE + ")";
+      for (var i = 0; i < stars.length; i++) {
+        stars[i].style = "rgba(" + starRGB + "," + stars[i].br + ")";
+      }
+    };
+
     var spinRate = (DEFAULT_PCT / 100) * SPIN_MAX;
     try {
       var s0 = parseFloat(localStorage.getItem("stars-spin"));
@@ -88,18 +100,20 @@
         var r = Rmax * Math.sqrt(Math.random());
         var a0 = Math.random() * Math.PI * 2;
         var b = Math.pow(Math.random(), 1.7);
+        var br = 0.35 + b * 0.65;
         stars.push({
           r: r,
           a0: a0,
           size: 0.6 + b * 1.6,
-          br: 0.35 + b * 0.65,
+          br: br,
+          style: "rgba(" + starRGB + "," + br + ")",
         });
       }
     }
 
     function clearDark() {
       ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgb(" + bgRGB + ")";
+      ctx.fillStyle = bgFill;
       ctx.fillRect(0, 0, w, h);
     }
 
@@ -111,7 +125,7 @@
         var a = st.a0 + rotation;
         var rr = st.r * zoom;
         ctx.beginPath();
-        ctx.fillStyle = "rgba(" + starRGB + "," + st.br + ")";
+        ctx.fillStyle = st.style;
         ctx.arc(cx + rr * Math.cos(a), cy + rr * Math.sin(a), st.size * 0.7, 0, 6.2832);
         ctx.fill();
       }
@@ -127,7 +141,7 @@
       rotation += spinRate * delta;
 
       ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = "rgba(" + bgRGB + "," + FADE + ")";
+      ctx.fillStyle = fadeStyle;
       ctx.fillRect(0, 0, w, h);
 
       ctx.globalCompositeOperation = "lighter";
@@ -136,7 +150,7 @@
         var st = stars[i];
         var a2 = st.a0 + rotation;
         var rr = st.r * zoom;
-        var style = "rgba(" + starRGB + "," + st.br + ")";
+        var style = st.style;
         if (moving) {
           ctx.beginPath();
           ctx.lineWidth = st.size;
@@ -241,6 +255,7 @@
       var s = hexToRgbStr(starHex);
       if (b) bgRGB = b;
       if (s) starRGB = s;
+      restyle();
       repaint();
     }
 
@@ -249,9 +264,19 @@
       repaint();
     }
 
+    function dispose() {
+      stop();
+      if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      canvas = null;
+      ctx = null;
+      stars = [];
+      inited = false;
+    }
+
     return {
       start: start,
       stop: stop,
+      dispose: dispose,
       setSpin: setSpin,
       setColors: setColors,
       setZoom: setZoom,
@@ -259,4 +284,8 @@
   })();
 
   window.__bgStars = StarTrails;
+
+  window.addEventListener("pagehide", function (e) {
+    if (!e.persisted) StarTrails.dispose();
+  });
 })();

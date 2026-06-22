@@ -22,6 +22,7 @@ var Galaxy = (function () {
   var running = false;
   var renderer = null;
   var loop = null;
+  var scene = null; // kept at module scope so dispose() can free its resources
   var guRef = null; // reference to the shared uniforms, for live color changes
 
   // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
@@ -65,7 +66,7 @@ var Galaxy = (function () {
     sky.appendChild(renderer.domElement);
     sky.classList.add("has-canvas");
 
-    var scene = new THREE.Scene();
+    scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(
       60,
       window.innerWidth / window.innerHeight,
@@ -573,6 +574,34 @@ var Galaxy = (function () {
     }
   }
 
+  // Release every GPU resource (geometries, materials, and crucially the WebGL
+  // context) plus the render-loop closure that pins the scene in JS. Called as
+  // the page is actually being left so reloads/navigation don't pile up orphan
+  // WebGL contexts (the browser caps them and leaks GPU memory otherwise). The
+  // galaxy rebuilds cleanly if start() is ever called again.
+  function dispose() {
+    stop();
+    loop = null;
+    if (scene) {
+      scene.traverse(function (obj) {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) obj.material.dispose();
+      });
+      scene = null;
+    }
+    if (renderer) {
+      if (renderer.domElement && renderer.domElement.parentNode) {
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
+      }
+      renderer.dispose();
+      if (renderer.forceContextLoss) renderer.forceContextLoss();
+      renderer = null;
+    }
+    if (sky) sky.classList.remove("has-canvas");
+    guRef = null;
+    inited = false;
+  }
+
   // Change the galaxy gradient (core hex -> edge hex). Works before the galaxy
   // is built (stored and applied on build) and live once it is running.
   function setColors(inHex, outHex) {
@@ -591,10 +620,22 @@ var Galaxy = (function () {
     autoSpin = (v / 100) * SPIN_MAX;
   }
 
-  return { start: start, stop: stop, setColors: setColors, setSpin: setSpin };
+  return {
+    start: start,
+    stop: stop,
+    dispose: dispose,
+    setColors: setColors,
+    setSpin: setSpin,
+  };
 })();
 
 window.__bgGalaxy = Galaxy;
+
+// Free the WebGL context as the page is left (real navigation/reload only, not
+// a bfcache freeze) so memory does not climb with every reload.
+window.addEventListener("pagehide", function (e) {
+  if (!e.persisted) Galaxy.dispose();
+});
 
 // Start immediately if the page loaded in galaxy mode (the inline head script
 // sets data-bg from the saved preference before first paint)
