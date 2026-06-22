@@ -54,13 +54,22 @@ var Galaxy = (function () {
   // Heavy one-time setup: only runs the first time the galaxy is shown
   function build() {
     try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
+      // depth/stencil buffers are pure waste here (the points draw additively
+      // with depthTest:false), so disabling them frees a whole buffer's worth
+      // of GPU memory per context. pixelRatio is capped at 1 so a scaled /
+      // HiDPI display does not allocate a 2x+ framebuffer for a soft backdrop.
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: false,
+        depth: false,
+        stencil: false,
+      });
     } catch (e) {
       renderer = null;
       return false; // no WebGL: the static starfield stays visible instead
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.domElement.className = "space-canvas";
     sky.appendChild(renderer.domElement);
