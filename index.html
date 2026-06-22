@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=19" />
+    <link rel="stylesheet" href="styles.css?v=21" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -35,16 +35,6 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <div id="space-background" aria-hidden="true">
       <div class="stars"></div>
-      <!-- Sun and black hole disabled to reduce lag; keeping the spinning galaxy.
-      <div class="sun"></div>
-      <div class="black-hole">
-        <span class="bh-glow"></span>
-        <span class="bh-disk-back"></span>
-        <span class="bh-core"></span>
-        <span class="bh-ring"></span>
-        <span class="bh-disk-front"></span>
-      </div>
-      -->
     </div>
 
     <header id="navbar">
@@ -175,9 +165,9 @@
       <div class="palette-panel" id="palette-stars-panel" role="dialog" aria-label="Star colors">
         <p class="palette-title">Star Palette</p>
         <div class="palette-toggle">
-          <span class="palette-toggle-label">Spin</span>
+          <span class="palette-toggle-label">Transfer</span>
           <label class="palette-switch">
-            <input type="checkbox" class="stars-spin-toggle" checked aria-label="Star spin on or off" />
+            <input type="checkbox" class="stars-transfer-toggle" aria-label="Keep star trails playing across the site" />
             <span class="palette-switch-track"><span class="palette-switch-thumb"></span></span>
           </label>
         </div>
@@ -268,8 +258,8 @@
       </div>
     </footer>
 
-    <script src="startrails.js?v=4" defer></script>
-    <script src="script.js?v=15" defer></script>
+    <script src="startrails.js?v=5" defer></script>
+    <script src="script.js?v=16" defer></script>
     <script type="module" src="galaxy3d.js?v=15"></script>
   </body>
 </html>

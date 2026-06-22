@@ -5,7 +5,6 @@
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
-  // Mobile navigation toggle
   var navToggle = document.querySelector(".nav-toggle");
   var navMenu = document.getElementById("nav-menu");
 
@@ -34,7 +33,6 @@
     });
   }
 
-  // Navbar scroll state
   var navbar = document.getElementById("navbar");
   if (navbar) {
     var onScroll = function () {
@@ -44,7 +42,6 @@
     onScroll();
   }
 
-  // Reveal cards as they scroll into view
   var revealTargets = document.querySelectorAll(".reveal");
   if (revealTargets.length) {
     if (prefersReducedMotion || !("IntersectionObserver" in window)) {
@@ -69,11 +66,8 @@
     }
   }
 
-  // Starfield background
   var sky = document.getElementById("space-background");
   if (sky) {
-    // Stars live in an oversized rotating layer; count is higher than the
-    // visible amount because only the layer's center is on screen
     var starLayer = sky.querySelector(".stars") || sky;
     var fragment = document.createDocumentFragment();
     var STAR_COUNT = 300;
@@ -106,8 +100,6 @@
     starLayer.appendChild(fragment);
   }
 
-  // Page swipe transitions: exit animation on click, entry animation is
-  // applied by the inline head script via sessionStorage + [data-enter]
   var PAGE_ORDER = [
     "index.html",
     "experience.html",
@@ -126,9 +118,6 @@
     return i === -1 ? 0 : i;
   };
 
-  // Celestial bodies glide to this page's position. The head script set
-  // data-page to the previous page, so switching it here animates the
-  // CSS left/top transition from where they were last seen.
   var currentPage = String(pageIndex(location.pathname));
   requestAnimationFrame(function () {
     requestAnimationFrame(function () {
@@ -144,8 +133,6 @@
     if (event.defaultPrevented || event.button !== 0) return;
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
       return;
-    // The page-swipe transition belongs to the galaxy; Stars mode navigates
-    // plainly with no swipe (and no transition delay)
     if (document.documentElement.getAttribute("data-bg") !== "galaxy") return;
 
     var link = event.target.closest("a");
@@ -170,7 +157,6 @@
     }, 380);
   });
 
-  // Reset transition state when restored from the back/forward cache
   window.addEventListener("pageshow", function (event) {
     if (event.persisted) {
       var root = document.documentElement;
@@ -179,19 +165,32 @@
     }
   });
 
-  // Footer year
   var yearEl = document.getElementById("year");
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
   }
 
-  // Background style toggle: calm starfield vs animated galaxy. The choice
-  // persists in localStorage, and the galaxy's WebGL loop is started/stopped
-  // so "Stars" mode costs no GPU.
   var bgButtons = document.querySelectorAll(".bg-toggle-btn");
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
-    var spinSync = null; // assigned by the spin-slider block below
+    var spinSync = null;
+    var transferOn = function () {
+      try {
+        return localStorage.getItem("stars-transfer") === "1";
+      } catch (e) {
+        return false;
+      }
+    };
+    var syncStarsBg = function () {
+      var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
+      var immersive = bgRoot.classList.contains("immersive");
+      var keep = stars && transferOn();
+      bgRoot.classList.toggle("stars-transfer", keep);
+      if (window.__bgStars) {
+        if (stars && (immersive || keep)) window.__bgStars.start();
+        else window.__bgStars.stop();
+      }
+    };
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
       bgRoot.setAttribute("data-bg", mode);
@@ -205,6 +204,7 @@
         if (mode === "galaxy") window.__bgGalaxy.start();
         else window.__bgGalaxy.stop();
       }
+      syncStarsBg();
       if (persist) {
         try {
           localStorage.setItem("bg-mode", mode);
@@ -212,19 +212,12 @@
       }
     };
 
-    // Immersive "play" mode: hide the resume UI so the background can be played
-    // with freely. Entered by pressing the active mode's button a second time:
-    // Galaxy -> spinning galaxy, Stars -> long-exposure star trails.
     var hintEl = null;
     var setImmersive = function (on) {
       bgRoot.classList.toggle("immersive", on);
       var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
-      // The star-trail renderer only runs in immersive Stars mode.
-      if (window.__bgStars) {
-        if (on && stars) window.__bgStars.start();
-        else window.__bgStars.stop();
-      }
-      if (spinSync) spinSync(); // aim the spin slider at the active mode
+      syncStarsBg();
+      if (spinSync) spinSync();
       if (on) {
         if (!hintEl) {
           hintEl = document.createElement("div");
@@ -235,18 +228,16 @@
           ? "Slider spins the star trails · Esc or Stars to exit"
           : "Drag to spin · slider sets a steady spin · Esc or Galaxy to exit";
         hintEl.classList.remove("show");
-        void hintEl.offsetWidth; // restart the fade animation
+        void hintEl.offsetWidth;
         hintEl.classList.add("show");
       }
     };
 
-    // Sync the buttons to the mode the inline head script already applied
     applyBgMode(bgRoot.getAttribute("data-bg") || "stars", false);
 
     bgButtons.forEach(function (b) {
       b.addEventListener("click", function () {
         var target = b.getAttribute("data-bg-mode");
-        // Pressing the already-active mode's button toggles immersive play mode
         if (target === bgRoot.getAttribute("data-bg")) {
           setImmersive(!bgRoot.classList.contains("immersive"));
         } else {
@@ -258,17 +249,27 @@
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && bgRoot.classList.contains("immersive")) {
-        // If the palette popover is open, let Escape close just the popover
-        // (handled by the palette's own listener) instead of also exiting
-        // immersive in the same keypress.
         var openPal = document.querySelector('.palette[data-open="true"]');
         if (openPal) return;
         setImmersive(false);
       }
     });
+
+    var transferToggle = document.querySelector(".stars-transfer-toggle");
+    if (transferToggle) {
+      transferToggle.checked = transferOn();
+      transferToggle.addEventListener("change", function () {
+        try {
+          localStorage.setItem(
+            "stars-transfer",
+            transferToggle.checked ? "1" : "0"
+          );
+        } catch (e) {}
+        syncStarsBg();
+      });
+    }
   }
 
-  // ----- Color math (hex <-> HSV), shared by every in-page color picker -----
   var clamp01 = function (n) {
     return n < 0 ? 0 : n > 1 ? 1 : n;
   };
@@ -337,15 +338,6 @@
     return rgbToHsv(c.r, c.g, c.b);
   };
 
-  // Wire up a color-palette popover. Both the galaxy palette (core/edge
-  // gradient) and the star palette (sky/star) share this: presets in a grid,
-  // plus a small in-page HSV picker (saturation/brightness pad + hue slider +
-  // hex) so choosing a color is instant and themed instead of opening the OS
-  // color dialog. The set of editable colors ("targets") is read from the
-  // markup's .custom-target buttons, so a palette can edit any number of them.
-  //
-  // cfg = { presets: { name: { <target>: hex, ... } }, defaultName,
-  //         storageName, storageColors, apply: function (colorsByTarget) }
   var setupPalette = function (palette, cfg) {
     var paletteBtn = palette.querySelector(".palette-btn");
     var swatches = palette.querySelectorAll(".palette-swatch");
@@ -355,22 +347,18 @@
     var hexInput = palette.querySelector(".cp-hex");
     var targets = palette.querySelectorAll(".custom-target");
 
-    // The colors this palette edits, in markup order (e.g. ["in","out"] or
-    // ["star","bg"]); the first is selected for editing initially.
     var targetKeys = [];
     targets.forEach(function (b) {
       targetKeys.push(b.getAttribute("data-target"));
     });
     var activeTarget = targetKeys[0];
 
-    // Each target's color, held as HSV so the picker can edit it directly.
     var endpoints = {};
 
     var hexOf = function (t) {
       var c = endpoints[t];
       return hsvToHex(c.h, c.s, c.v);
     };
-    // Snapshot every target's current hex, keyed by target name.
     var colorsObj = function () {
       var o = {};
       targetKeys.forEach(function (k) {
@@ -390,7 +378,6 @@
       } catch (e) {}
     };
 
-    // Highlight the active preset; "custom" matches nothing, clearing them all
     var markSelected = function (name) {
       swatches.forEach(function (s) {
         s.setAttribute(
@@ -400,8 +387,6 @@
       });
     };
 
-    // Paint the pad/slider/hex/chips from the active target's HSV. Pass
-    // skipHex while the user is typing so the field isn't rewritten mid-edit.
     var renderPicker = function (skipHex) {
       var c = endpoints[activeTarget];
       if (sv) sv.style.backgroundColor = "hsl(" + c.h + ", 100%, 50%)";
@@ -430,7 +415,6 @@
       persistPalette("custom");
     };
 
-    // Restore the saved palette (preset default if none saved)
     var savedName = cfg.defaultName;
     var savedColors = cfg.presets[cfg.defaultName];
     try {
@@ -479,7 +463,6 @@
       });
     });
 
-    // Choose which color the picker edits
     targets.forEach(function (b) {
       b.addEventListener("click", function () {
         activeTarget = b.getAttribute("data-target");
@@ -490,7 +473,6 @@
       });
     });
 
-    // Saturation / brightness pad: press or drag anywhere to pick
     if (sv) {
       var svDragging = false;
       var svPick = function (e) {
@@ -543,7 +525,6 @@
       });
     }
 
-    // Hue slider (live while sliding, persist on release)
     if (hue) {
       hue.addEventListener("input", function () {
         endpoints[activeTarget].h = parseFloat(hue.value) || 0;
@@ -553,7 +534,6 @@
       hue.addEventListener("change", persistNow);
     }
 
-    // Hex entry (typed)
     if (hexInput) {
       hexInput.addEventListener("input", function () {
         var v = hexInput.value.replace(/[^0-9a-fA-F]/g, "").slice(0, 6);
@@ -570,7 +550,6 @@
       });
     }
 
-    // Close the panel on an outside click or Escape
     document.addEventListener("click", function (e) {
       if (
         palette.getAttribute("data-open") === "true" &&
@@ -586,9 +565,6 @@
     });
   };
 
-  // Galaxy palette (galaxy mode): presets feed the galaxy's two gradient
-  // endpoints (core -> edge). galaxy3d.js reads the saved colors itself, so
-  // this drives only live changes.
   var galaxyPalette = document.querySelector(".palette-galaxy");
   if (galaxyPalette) {
     setupPalette(galaxyPalette, {
@@ -609,8 +585,6 @@
     });
   }
 
-  // Star palette (immersive Stars play mode): presets set the sky background
-  // and the star color of the long-exposure trails.
   var starsPalette = document.querySelector(".palette-stars");
   if (starsPalette) {
     setupPalette(starsPalette, {
@@ -631,31 +605,6 @@
     });
   }
 
-  // Star spin on/off toggle (inside the star palette). A boolean switch that
-  // freezes or resumes the trail rotation. The choice persists and the renderer
-  // reads it again when the trails first build, so it survives a reload.
-  var spinToggle = document.querySelector(".stars-spin-toggle");
-  if (spinToggle) {
-    var savedSpinning = true;
-    try {
-      if (localStorage.getItem("stars-spinning") === "0") savedSpinning = false;
-    } catch (e) {}
-    spinToggle.checked = savedSpinning;
-    spinToggle.addEventListener("change", function () {
-      var on = spinToggle.checked;
-      if (window.__bgStars && window.__bgStars.setSpinning) {
-        window.__bgStars.setSpinning(on);
-      }
-      try {
-        localStorage.setItem("stars-spinning", on ? "1" : "0");
-      } catch (e) {}
-    });
-  }
-
-  // Immersive spin slider. It drives whichever play mode is active: the galaxy
-  // in Galaxy mode, the star trails in Stars mode. Each mode keeps its own saved
-  // speed, and the slider re-syncs to the active mode when immersive is entered
-  // (see setImmersive). The reset button recenters the slider to a stop.
   var spin = document.querySelector(".spin-control");
   if (spin) {
     var spinSlider = spin.querySelector(".spin-slider");
@@ -670,8 +619,6 @@
     var spinTarget = function () {
       return spinIsGalaxy() ? window.__bgGalaxy : window.__bgStars;
     };
-    // Default speed when a mode has no saved value: the galaxy rests, the star
-    // trails drift gently so they read the moment you enter.
     var spinDefault = function () {
       return spinIsGalaxy() ? 0 : 40;
     };
@@ -695,13 +642,12 @@
       }
     };
 
-    // Point the slider at the active mode's saved speed and apply it.
     var syncSpin = function () {
       var v = readSaved();
       if (spinSlider) spinSlider.value = String(v);
       applySpin(v, false);
     };
-    spinSync = syncSpin; // let setImmersive re-sync when the mode changes
+    spinSync = syncSpin;
     syncSpin();
 
     if (spinSlider) {
@@ -717,15 +663,12 @@
     }
   }
 
-  // Sky Slam easter egg: clicking the card four times reveals a "spy disguise"
-  // (the IM A SPY cap + sunglasses pop out onto its corners). Clicking it again
-  // hides them; the counter resets if you pause too long between clicks.
   var spyCard = document.querySelector(".project-card.has-spy");
   if (spyCard) {
     var spyClicks = 0;
     var spyTimer = null;
     spyCard.addEventListener("click", function (e) {
-      if (e.target.closest("a")) return; // let the Roblox link work normally
+      if (e.target.closest("a")) return;
       if (spyCard.classList.contains("spy-on")) {
         spyCard.classList.remove("spy-on");
         spyClicks = 0;

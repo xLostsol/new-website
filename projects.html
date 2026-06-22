@@ -26,7 +26,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=19" />
+    <link rel="stylesheet" href="styles.css?v=21" />
     <script>
       (function () { var d = document.documentElement; d.classList.add("js"); try { var dir = sessionStorage.getItem("nav-dir"); if (dir) { sessionStorage.removeItem("nav-dir"); d.setAttribute("data-enter", dir); } var prev = sessionStorage.getItem("prev-page"); if (prev !== null) { d.setAttribute("data-page", prev); } } catch (e) {} try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
     </script>
@@ -35,16 +35,6 @@
     <a class="skip-link" href="#main">Skip to content</a>
     <div id="space-background" aria-hidden="true">
       <div class="stars"></div>
-      <!-- Sun and black hole disabled to reduce lag; keeping the spinning galaxy.
-      <div class="sun"></div>
-      <div class="black-hole">
-        <span class="bh-glow"></span>
-        <span class="bh-disk-back"></span>
-        <span class="bh-core"></span>
-        <span class="bh-ring"></span>
-        <span class="bh-disk-front"></span>
-      </div>
-      -->
     </div>
 
     <header id="navbar">
@@ -107,38 +97,14 @@
                 <span class="tech-tag">Live Updates</span>
               </div>
 
-              <!-- Easter egg: click the card 4x to pop the "spy disguise" onto its corners -->
               <span class="spy-item spy-cap" aria-hidden="true">
                 <span class="spy-inner">
-                  <svg viewBox="0 0 120 104" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 66 Q60 102 102 66 Q60 80 18 66 Z" fill="#1e2128" />
-                    <path d="M22 68 A39 39 0 0 1 98 68 Q60 76 22 68 Z" fill="#2c313b" />
-                    <path d="M22 68 A39 39 0 0 1 60 30 L60 73 Q40 73 22 68 Z" fill="#262a33" />
-                    <circle cx="60" cy="39" r="3" fill="#1e2128" />
-                    <path d="M60 40 V73" stroke="#1a1d23" stroke-width="1.1" opacity="0.5" />
-                    <text x="60" y="54" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="12" letter-spacing="0.5" fill="#eef1f5">IM A</text>
-                    <text x="60" y="68" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="13" letter-spacing="0.5" fill="#eef1f5">SPY</text>
-                  </svg>
+                  <img src="assets/spy-cap.png?v=1" alt="" draggable="false" />
                 </span>
               </span>
               <span class="spy-item spy-glasses" aria-hidden="true">
                 <span class="spy-inner">
-                  <svg viewBox="0 0 144 64" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="spyLens" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0" stop-color="#bfe6ff" />
-                        <stop offset="0.45" stop-color="#4f86b8" />
-                        <stop offset="1" stop-color="#1f3f6e" />
-                      </linearGradient>
-                    </defs>
-                    <path d="M14 22 L34 30" fill="none" stroke="#c9d2db" stroke-width="3.4" stroke-linecap="round" />
-                    <path d="M130 22 L110 30" fill="none" stroke="#c9d2db" stroke-width="3.4" stroke-linecap="round" />
-                    <path d="M64 31 H80" fill="none" stroke="#c9d2db" stroke-width="3.2" stroke-linecap="round" />
-                    <path d="M33 29 L64 31 L60 47 Q44 53 35 45 Z" fill="url(#spyLens)" stroke="#dbe3ea" stroke-width="2.2" stroke-linejoin="round" />
-                    <path d="M111 29 L80 31 L84 47 Q100 53 109 45 Z" fill="url(#spyLens)" stroke="#dbe3ea" stroke-width="2.2" stroke-linejoin="round" />
-                    <path d="M38 33 L52 35" stroke="#eaf6ff" stroke-width="2" stroke-linecap="round" opacity="0.7" />
-                    <path d="M88 35 L100 34" stroke="#eaf6ff" stroke-width="2" stroke-linecap="round" opacity="0.55" />
-                  </svg>
+                  <img src="assets/spy-glasses.png?v=1" alt="" draggable="false" />
                 </span>
               </span>
             </article>
@@ -284,9 +250,9 @@
       <div class="palette-panel" id="palette-stars-panel" role="dialog" aria-label="Star colors">
         <p class="palette-title">Star Palette</p>
         <div class="palette-toggle">
-          <span class="palette-toggle-label">Spin</span>
+          <span class="palette-toggle-label">Transfer</span>
           <label class="palette-switch">
-            <input type="checkbox" class="stars-spin-toggle" checked aria-label="Star spin on or off" />
+            <input type="checkbox" class="stars-transfer-toggle" aria-label="Keep star trails playing across the site" />
             <span class="palette-switch-track"><span class="palette-switch-thumb"></span></span>
           </label>
         </div>
@@ -377,8 +343,8 @@
       </div>
     </footer>
 
-    <script src="startrails.js?v=4" defer></script>
-    <script src="script.js?v=15" defer></script>
+    <script src="startrails.js?v=5" defer></script>
+    <script src="script.js?v=16" defer></script>
     <script type="module" src="galaxy3d.js?v=15"></script>
   </body>
 </html>

@@ -1,8 +1,3 @@
-/* ==========================================================================
-   Joseph Bressani | Portfolio
-   ========================================================================== */
-
-/* ----- Design tokens ----- */
 :root {
   --bg: #060612;
   --surface: rgba(15, 16, 34, 0.72);
@@ -11,7 +6,6 @@
   --border-hover: rgba(120, 180, 158, 0.5);
   --text: #e9ebf8;
   --text-muted: #a8aecb;
-  /* Natural sage-to-teal accent (replaces the synthetic indigo/periwinkle) */
   --accent: #84c3ad;
   --accent-soft: rgba(95, 170, 148, 0.2);
   --gradient: linear-gradient(135deg, #8fb89a, #3f8278);
@@ -19,19 +13,15 @@
   --radius-md: 18px;
   --radius-pill: 999px;
   --shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
-  /* Apple-style motion and materials: a settled spring-like ease shared by
-     buttons, cards, and page transitions, plus a frosted "vibrancy" filter */
   --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
   --material: saturate(180%) blur(10px);
   --nav-height: 4.5rem;
   --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
-  /* Celestial body sizes scale with the viewport for a consistent look */
   --bh-size: clamp(130px, 19vmin, 230px);
   --sun-size: clamp(72px, 10vmin, 120px);
 }
 
-/* ----- Base ----- */
 * {
   margin: 0;
   padding: 0;
@@ -65,7 +55,6 @@ h3 {
   line-height: 1.2;
 }
 
-/* ----- Accessibility ----- */
 .skip-link {
   position: absolute;
   top: -100%;
@@ -90,7 +79,6 @@ h3 {
   border-radius: 4px;
 }
 
-/* ----- Space background ----- */
 #space-background {
   position: fixed;
   inset: 0;
@@ -105,7 +93,6 @@ h3 {
   transition: transform 0.6s var(--ease-apple);
 }
 
-/* Oversized square so the slow rotation never exposes edges */
 .stars {
   position: absolute;
   left: 50%;
@@ -116,17 +103,12 @@ h3 {
   animation: starfield-rotate 420s linear infinite;
 }
 
-/* WebGL galaxy canvas (home page only); it replaces the static stars */
 .space-canvas {
   position: absolute;
   inset: 0;
   transition: opacity 0.7s ease;
 }
 
-/* ----- Background modes (crossfade) -----
-   Two looks share #space-background: a calm starfield and the WebGL galaxy.
-   The starfield hides only when the galaxy canvas is actually present, so
-   reduced-motion / no-WebGL gracefully falls back to the stars. */
 .stars {
   transition: opacity 0.7s ease;
 }
@@ -140,7 +122,6 @@ html[data-bg="stars"] .space-canvas {
   pointer-events: none;
 }
 
-/* Long-exposure star-trail canvas (immersive Stars play mode only) */
 .startrails-canvas {
   position: absolute;
   inset: 0;
@@ -153,8 +134,8 @@ html[data-bg="stars"] .space-canvas {
   opacity: 1;
 }
 
-/* In immersive Stars mode the trails own the sky; pause the calm starfield */
-html.immersive[data-bg="stars"] .stars {
+html.immersive[data-bg="stars"] .stars,
+html.stars-transfer[data-bg="stars"] .stars {
   opacity: 0;
   animation-play-state: paused;
 }
@@ -172,7 +153,6 @@ html.immersive[data-bg="stars"] .stars {
   box-shadow: 0 0 6px 1px rgba(214, 222, 255, 0.55);
 }
 
-/* Celestial bodies drift to a new spot on each page */
 .sun,
 .black-hole {
   position: absolute;
@@ -180,14 +160,12 @@ html.immersive[data-bg="stars"] .stars {
     top 1.6s cubic-bezier(0.33, 0, 0.15, 1);
 }
 
-/* The sun: hot core with a breathing corona */
 .sun {
   left: 8%;
   top: 68%;
   width: var(--sun-size);
   height: var(--sun-size);
   border-radius: 50%;
-  /* Hot near-white core easing smoothly out to a warm amber rim */
   background: radial-gradient(
     circle at 42% 38%,
     #fffbf2 0%,
@@ -202,7 +180,6 @@ html.immersive[data-bg="stars"] .stars {
   opacity: 0.85;
 }
 
-/* Soft corona that breathes gently */
 .sun::after {
   content: "";
   position: absolute;
@@ -217,21 +194,15 @@ html.immersive[data-bg="stars"] .stars {
   animation: sun-breathe 7s ease-in-out infinite alternate;
 }
 
-/* Interstellar-style black hole: a dark sphere wrapped by a lensed photon
-   ring, with an accretion disk passing behind and in front of it */
 .black-hole {
   left: 76%;
   top: 10%;
   width: var(--bh-size);
   height: var(--bh-size);
   opacity: 0.97;
-  /* Sit above the galaxy point-cloud so the disk reads cleanly instead of
-     being speckled by the stars drifting in front of it */
   z-index: 1;
 }
 
-/* Lensed hot spots: blue-white knots strung along the bright side of the disk,
-   like the glowing clumps in the reference. Painted above the disk layers. */
 .black-hole::after {
   content: "";
   position: absolute;
@@ -247,7 +218,6 @@ html.immersive[data-bg="stars"] .stars {
   animation: knot-flicker 4.5s ease-in-out infinite alternate;
 }
 
-/* Bloom: a tight warm-white core glow inside a broad, soft warm halo */
 .bh-glow {
   position: absolute;
   inset: -60%;
@@ -262,8 +232,6 @@ html.immersive[data-bg="stars"] .stars {
     );
 }
 
-/* Accretion disk: one ellipse ring split into a far half (behind the
-   sphere) and a near half (in front), with Doppler-bright center */
 .bh-disk-back,
 .bh-disk-front {
   position: absolute;
@@ -315,8 +283,6 @@ html.immersive[data-bg="stars"] .stars {
   animation: disk-glow 5s ease-in-out infinite alternate;
 }
 
-/* The disk swing plays only after arriving on the new page: it starts
-   tipped in the travel direction and eases back to rest */
 html[data-enter="forward"] .bh-disk-back {
   animation: disk-settle-forward 1.6s cubic-bezier(0.45, 0, 0.25, 1) both;
 }
@@ -335,8 +301,6 @@ html[data-enter="back"] .bh-disk-front {
     disk-glow 5s ease-in-out infinite alternate;
 }
 
-/* Event horizon: a near-black sphere with only a whisper of warm light
-   spilling around its rim from the lensing */
 .bh-core {
   position: absolute;
   inset: 13%;
@@ -353,8 +317,6 @@ html[data-enter="back"] .bh-disk-front {
     inset 0 0 32px 12px #000;
 }
 
-/* Hollow photon ring: a thin circle of light separated from the shadow
-   by a dark gap */
 .bh-ring {
   position: absolute;
   inset: 2%;
@@ -384,8 +346,6 @@ html[data-enter="back"] .bh-disk-front {
   filter: blur(0.6px);
 }
 
-/* Per-page choreography: the black hole travels right-to-left through the
-   site while the sun travels left-to-right and the galaxy wanders */
 html[data-page="0"] .black-hole { left: 76%; top: 10%; }
 html[data-page="0"] .sun { left: 8%; top: 68%; }
 
@@ -401,7 +361,6 @@ html[data-page="3"] .sun { left: 66%; top: 72%; }
 html[data-page="4"] .black-hole { left: 3%; top: 10%; }
 html[data-page="4"] .sun { left: 81%; top: 64%; }
 
-/* ----- Navigation ----- */
 #navbar {
   position: fixed;
   top: 0;
@@ -487,7 +446,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   display: none;
 }
 
-/* ----- Layout ----- */
 .page-section {
   max-width: 1100px;
   margin: 0 auto;
@@ -505,7 +463,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   box-shadow: var(--shadow);
 }
 
-/* ----- Hero ----- */
 .hero {
   min-height: 100vh;
   min-height: 100svh;
@@ -522,7 +479,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   max-width: 50rem;
 }
 
-/* Dark halo behind the hero text so it stays readable over the galaxy */
 .hero-content::before {
   content: "";
   position: absolute;
@@ -601,8 +557,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin-bottom: 2.25rem;
 }
 
-/* Borderless stats separated by hairline dividers instead of boxed chips,
-   so the hero reads as numbers-at-a-glance rather than a row of cards */
 .hero-stats li {
   padding: 0.1rem 1.85rem;
   text-align: center;
@@ -639,7 +593,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin-top: 1rem;
 }
 
-/* ----- Buttons ----- */
 .cta-buttons {
   display: flex;
   gap: 1rem;
@@ -662,8 +615,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   line-height: 1;
   text-decoration: none;
   color: #fff;
-  /* Brand gradient with a soft specular sheen layered over the top, so the
-     pill reads as a piece of lit glass (Apple's Liquid Glass language) */
   background:
     linear-gradient(
       180deg,
@@ -680,7 +631,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  /* Native-feeling touch: no blue tap flash, no 300ms delay */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
@@ -689,7 +639,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
     filter 0.22s ease;
 }
 
-/* Hover only shifts light, never size or weight, so nothing reflows */
 .cta-button:hover {
   filter: brightness(1.05);
   box-shadow:
@@ -698,8 +647,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
     0 7px 22px rgba(63, 130, 120, 0.42);
 }
 
-/* Liquid Glass press: the capsule scales in and dims under the finger,
-   then springs back on release */
 .cta-button:active {
   transform: scale(0.95);
   filter: brightness(0.96);
@@ -708,7 +655,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
 
 .cta-button.secondary {
   color: var(--text);
-  /* Clear glass capsule: translucent fill, frosted backdrop, hairline edge */
   background:
     linear-gradient(
       180deg,
@@ -744,7 +690,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   transition-duration: 0.07s;
 }
 
-/* ----- Section headings ----- */
 .section-title {
   position: relative;
   font-size: clamp(1.9rem, 4vw, 2.5rem);
@@ -778,18 +723,13 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin: 2.75rem 0 1.5rem;
 }
 
-/* ----- Cards ----- */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
-  /* Hairline top highlight reads as glass lit from above, the iOS material look.
-     No backdrop-filter here: the card already sits on the frosted
-     .content-section, so a second blur pass buys almost nothing for real cost. */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 10px 30px rgba(0, 0, 0, 0.25);
-  /* Only the composited transform animates; the deeper shadow swaps in at once */
   transition: transform 0.5s var(--ease-apple), border-color 0.4s ease;
 }
 
@@ -856,7 +796,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   color: var(--accent);
 }
 
-/* ----- Timeline (experience) ----- */
 .timeline {
   display: grid;
   gap: 1.5rem;
@@ -866,22 +805,18 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   border-left: 3px solid rgba(124, 143, 240, 0.55);
 }
 
-/* ----- Grids ----- */
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 1.5rem;
 }
 
-/* Balanced 2x2 grid so no category is left orphaned on its own row */
 .skills-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
 }
 
-/* Light, evenly sized panels with an app-style icon chip: structured and
-   scannable, but much lighter than the old heavy cards */
 .skill-group {
   display: flex;
   flex-direction: column;
@@ -907,7 +842,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin-bottom: 1.05rem;
 }
 
-/* Icon sits in a small tinted rounded square, like an app glyph */
 .skill-head svg {
   box-sizing: content-box;
   width: 1.05rem;
@@ -926,7 +860,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin-bottom: 1rem;
 }
 
-/* ----- Projects ----- */
 .project-card {
   display: flex;
   flex-direction: column;
@@ -964,7 +897,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   font-weight: 500;
 }
 
-/* ----- Contact ----- */
 .contact-card {
   text-align: center;
   display: flex;
@@ -1030,7 +962,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   margin: 0.35rem 0.5rem;
 }
 
-/* ----- Footer ----- */
 .site-footer {
   border-top: 1px solid var(--border);
   background: rgba(6, 6, 18, 0.6);
@@ -1071,10 +1002,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   color: var(--accent);
 }
 
-/* ----- Background style toggle ----- */
-/* A small frosted-glass segmented control, fixed bottom-right, that switches
-   between the calm starfield and the galaxy. Stays low-profile until hovered
-   so the resume remains the focus. */
 .bg-toggle {
   position: fixed;
   bottom: 1.25rem;
@@ -1135,7 +1062,6 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   box-shadow: 0 2px 10px rgba(63, 130, 120, 0.42);
 }
 
-/* ----- Galaxy color palette picker (top-right, galaxy mode only) ----- */
 .palette {
   position: fixed;
   top: 5.25rem;
@@ -1143,14 +1069,12 @@ html[data-page="4"] .sun { left: 81%; top: 64%; }
   z-index: 1500;
 }
 
-/* The galaxy palette only matters over the galaxy; hide it elsewhere. */
 html[data-bg="stars"] .palette-galaxy {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* The star palette belongs to the immersive Stars play mode only. */
 .palette-stars {
   opacity: 0;
   visibility: hidden;
@@ -1163,7 +1087,6 @@ html.immersive[data-bg="stars"] .palette-stars {
   pointer-events: auto;
 }
 
-/* Spin on/off toggle inside the star palette */
 .palette-toggle {
   display: flex;
   align-items: center;
@@ -1382,7 +1305,6 @@ html.immersive[data-bg="stars"] .palette-stars {
   color: var(--text);
 }
 
-/* Core / Edge target toggles: pick which endpoint the picker edits */
 .custom-targets {
   display: flex;
   gap: 0.5rem;
@@ -1430,7 +1352,6 @@ html.immersive[data-bg="stars"] .palette-stars {
   color: var(--text);
 }
 
-/* In-page HSV picker */
 .cp {
   display: flex;
   flex-direction: column;
@@ -1545,9 +1466,6 @@ html.immersive[data-bg="stars"] .palette-stars {
   text-transform: uppercase;
 }
 
-/* ----- Immersive galaxy "play" mode ----- */
-/* Hides the resume UI so the galaxy can be dragged/played with full-screen.
-   The toggle stays (and brightens) as the way back out. */
 html.immersive #navbar,
 html.immersive main,
 html.immersive .site-footer {
@@ -1559,8 +1477,6 @@ html.immersive .site-footer {
 html.immersive,
 html.immersive body {
   overflow: hidden;
-  /* Stop the browser from claiming touch gestures so the galaxy gets the
-     pointer events for drag and two-finger pinch-zoom on mobile. */
   touch-action: none;
 }
 
@@ -1606,9 +1522,6 @@ html.immersive .bg-toggle {
   }
 }
 
-/* ----- Galaxy spin slider (immersive play mode only) ----- */
-/* A continuous, non-decaying spin the user can dial in. Hidden and inert
-   outside immersive mode; the reset button recenters it to a stop. */
 .spin-control {
   position: fixed;
   left: 50%;
@@ -1680,8 +1593,6 @@ html.immersive .spin-control {
   background: rgba(255, 255, 255, 0.18);
   outline: none;
   cursor: pointer;
-  /* Immersive sets touch-action:none on the page so the galaxy gets gestures;
-     re-enable it here so the slider can be dragged on touch. */
   touch-action: auto;
 }
 
@@ -1717,8 +1628,6 @@ html.immersive .spin-control {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* On phones, sit to the left so it never collides with the bottom-right
-   toggle. */
 @media (max-width: 480px) {
   .spin-control {
     left: 1rem;
@@ -1737,7 +1646,6 @@ html.immersive .spin-control {
   }
 }
 
-/* ----- Reveal on scroll ----- */
 html.js .reveal {
   opacity: 0;
   transform: translateY(22px);
@@ -1749,14 +1657,6 @@ html.js .reveal.visible {
   transform: translateY(0);
 }
 
-/* ----- Apple-style page transitions ----- */
-/* The outgoing view recedes and dims while the incoming view glides forward
-   and settles, echoing the parallax push of iOS navigation. No rotation:
-   Apple keeps content flat and lets motion carry the depth. */
-/* will-change only while exiting: the page unloads moments later, so the hint
-   is short-lived. The entry animation (transform/opacity) is auto-composited
-   and needs no persistent hint, which avoids keeping `main` on a compositor
-   layer for the whole life of every page reached by in-site navigation. */
 html.page-exit-forward main,
 html.page-exit-back main {
   will-change: transform, opacity;
@@ -1778,8 +1678,6 @@ html[data-enter="back"] main {
   animation: page-in-left 0.6s var(--ease-apple) both;
 }
 
-/* The universe drifts with a subtle depth shift, slower than the content
-   in front of it for a layered parallax feel */
 html.page-exit-forward #space-background {
   transform: scale(1.04) translateX(-1.5%);
 }
@@ -1838,8 +1736,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* ----- Sky Slam easter egg: click the card 4x to reveal the spy disguise -----
-   The IM A SPY cap and sunglasses pop out and rest on the card's corners. */
 .project-card.has-spy {
   position: relative;
   overflow: visible;
@@ -1857,7 +1753,8 @@ html[data-enter="back"] #space-background {
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.45));
 }
 
-.spy-item svg {
+.spy-item svg,
+.spy-item img {
   display: block;
   width: 100%;
   height: auto;
@@ -1929,7 +1826,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* ----- Animations ----- */
 @keyframes rise {
   from {
     opacity: 0;
@@ -1965,7 +1861,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* The lensed hot knots shimmer gently in brightness */
 @keyframes knot-flicker {
   from {
     opacity: 0.55;
@@ -1975,7 +1870,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* Disk swing after a page change, easing back to the resting angle */
 @keyframes disk-settle-forward {
   from {
     transform: rotate(24deg);
@@ -2005,7 +1899,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* ----- Responsive ----- */
 @media (max-width: 768px) {
   .nav-toggle {
     display: inline-flex;
@@ -2049,8 +1942,6 @@ html[data-enter="back"] #space-background {
     right: 0;
     flex-direction: column;
     gap: 0;
-    /* Solid color: nested backdrop-filter inside #navbar composites
-       incorrectly in Chromium, letting content bleed through */
     background: #0a0b1a;
     border-bottom: 1px solid var(--border);
     padding: 0.5rem 0 0.9rem;
@@ -2085,7 +1976,6 @@ html[data-enter="back"] #space-background {
     padding: calc(var(--nav-height) + 1.5rem) 1rem 2rem;
   }
 
-  /* Smaller halo so the galaxy stays visible around the hero text */
   .hero-content::before {
     inset: -10% -12%;
   }
@@ -2106,7 +1996,6 @@ html[data-enter="back"] #space-background {
 }
 
 @media (max-width: 480px) {
-  /* Icons-only toggle on small screens to stay compact */
   .bg-toggle-label {
     display: none;
   }
@@ -2147,7 +2036,6 @@ html[data-enter="back"] #space-background {
   }
 }
 
-/* ----- Reduced motion ----- */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

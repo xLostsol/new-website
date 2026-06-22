@@ -1,17 +1,3 @@
-// Long-exposure star-trail background for immersive "Stars" play mode.
-//
-// A field of stars rotates around a celestial-pole point; each frame strokes
-// the short arc every star sweeps, laid over a slowly fading dark wash, so the
-// stars leave smooth concentric trails like a long-exposure photograph. The
-// spin slider sets the rotation speed (and therefore how long the trails read);
-// the star palette sets the sky and star colors, and the scroll wheel zooms
-// the field in and out.
-//
-// Canvas 2D (no WebGL). It builds lazily and runs only while immersive Stars
-// mode is active, exposing window.__bgStars.start()/stop()/setSpin()/
-// setColors()/setZoom()/setSpinning().
-// Technique inspiration: the classic "rotate the whole field + fade" approach
-// used for star-trail and light-trail canvas effects.
 (function () {
   var sky = document.getElementById("space-background");
   var prefersReducedMotion = window.matchMedia(
@@ -33,9 +19,9 @@
     var raf = null;
     var last = 0;
 
-    var SPIN_MAX = 0.5; // rad/s at full slider deflection
-    var FADE = 0.05; // dark-wash alpha per frame; smaller = longer trails
-    var DEFAULT_PCT = 40; // gentle default so first entry shows trails at once
+    var SPIN_MAX = 0.5;
+    var FADE = 0.05;
+    var DEFAULT_PCT = 40;
     var ZOOM_MIN = 0.45;
     var ZOOM_MAX = 3;
 
@@ -43,7 +29,6 @@
       return n < lo ? lo : n > hi ? hi : n;
     };
 
-    // "#rrggbb" (or "#rgb") -> "r,g,b" for use in rgb()/rgba(); null if invalid.
     var hexToRgbStr = function (hex) {
       hex = String(hex).replace("#", "");
       if (hex.length === 3) {
@@ -55,11 +40,8 @@
       return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255);
     };
 
-    // Sky (background) and star colors, held as "r,g,b" strings. The saved
-    // palette is read here so the chosen look is in place the moment the trails
-    // first build (mirrors how the galaxy reads its own saved colors).
-    var bgRGB = "5,6,15"; // deep space navy
-    var starRGB = "255,255,255"; // classic white
+    var bgRGB = "5,6,15";
+    var starRGB = "255,255,255";
     try {
       var cs = JSON.parse(localStorage.getItem("stars-colors"));
       if (cs) {
@@ -70,27 +52,16 @@
       }
     } catch (e) {}
 
-    // Continuous spin rate (rad/s) from the slider. Saved value wins; otherwise
-    // a gentle default so the trails are visible the moment you enter.
     var spinRate = (DEFAULT_PCT / 100) * SPIN_MAX;
     try {
       var s0 = parseFloat(localStorage.getItem("stars-spin"));
       if (!isNaN(s0)) spinRate = (clamp(s0, -100, 100) / 100) * SPIN_MAX;
     } catch (e) {}
 
-    // Scroll-wheel zoom: scales every star's orbit radius about the pole.
     var zoom = 1;
     try {
       var z0 = parseFloat(localStorage.getItem("stars-zoom"));
       if (!isNaN(z0)) zoom = clamp(z0, ZOOM_MIN, ZOOM_MAX);
-    } catch (e) {}
-
-    // Spin on/off (star palette toggle). When off the field freezes into a
-    // static starfield and the existing trails fade away; the spin slider still
-    // remembers its speed for when spin is switched back on. On by default.
-    var spinning = true;
-    try {
-      if (localStorage.getItem("stars-spinning") === "0") spinning = false;
     } catch (e) {}
 
     function sizeCanvas() {
@@ -103,7 +74,6 @@
       canvas.style.height = h + "px";
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.lineCap = "round";
-      // Pole sits a little above center, echoing a north-facing exposure
       cx = w * 0.5;
       cy = h * 0.45;
     }
@@ -111,13 +81,13 @@
     function makeStars() {
       stars = [];
       var diag = Math.sqrt(w * w + h * h);
-      var Rmax = diag * 0.62; // cover the corners as the field rotates
+      var Rmax = diag * 0.62;
       var small = w < 768;
       var count = small ? 320 : 620;
       for (var i = 0; i < count; i++) {
-        var r = Rmax * Math.sqrt(Math.random()); // uniform across the disk
+        var r = Rmax * Math.sqrt(Math.random());
         var a0 = Math.random() * Math.PI * 2;
-        var b = Math.pow(Math.random(), 1.7); // mostly dim, a few bright
+        var b = Math.pow(Math.random(), 1.7);
         stars.push({
           r: r,
           a0: a0,
@@ -154,9 +124,8 @@
       last = now;
 
       var prevRot = rotation;
-      if (spinning) rotation += spinRate * delta;
+      rotation += spinRate * delta;
 
-      // Fading dark wash: previous arc segments dim into trailing tails.
       ctx.globalCompositeOperation = "source-over";
       ctx.fillStyle = "rgba(" + bgRGB + "," + FADE + ")";
       ctx.fillRect(0, 0, w, h);
@@ -184,8 +153,6 @@
       ctx.globalCompositeOperation = "source-over";
     }
 
-    // Reset the wash to the current background so trails rebuild cleanly after
-    // a color or zoom change (a static frame when motion is reduced).
     function repaint() {
       if (!running) return;
       if (prefersReducedMotion) drawStatic();
@@ -213,13 +180,11 @@
         }, 150);
       });
 
-      // Scroll to zoom the field in/out. The trail canvas itself is
-      // pointer-events:none, so listen on the window and act only while the
-      // trails are running; let the wheel fall through over the palette.
       window.addEventListener(
         "wheel",
         function (e) {
           if (!running) return;
+          if (!document.documentElement.classList.contains("immersive")) return;
           if (e.target && e.target.closest && e.target.closest(".palette")) return;
           var nz = clamp(zoom * Math.exp(-e.deltaY * 0.0015), ZOOM_MIN, ZOOM_MAX);
           e.preventDefault();
@@ -243,7 +208,7 @@
       if (running) return;
       running = true;
       if (prefersReducedMotion) {
-        drawStatic(); // calm static starscape, no rotation
+        drawStatic();
         return;
       }
       clearDark();
@@ -271,8 +236,6 @@
       spinRate = (n / 100) * SPIN_MAX;
     }
 
-    // Live sky/star color change from the star palette. Either argument may be
-    // omitted to leave that color unchanged.
     function setColors(bgHex, starHex) {
       var b = hexToRgbStr(bgHex);
       var s = hexToRgbStr(starHex);
@@ -286,19 +249,12 @@
       repaint();
     }
 
-    // Freeze or resume the rotation (star palette spin toggle). The frame loop
-    // keeps running so the trails fade off / rebuild smoothly on either change.
-    function setSpinning(on) {
-      spinning = !!on;
-    }
-
     return {
       start: start,
       stop: stop,
       setSpin: setSpin,
       setColors: setColors,
       setZoom: setZoom,
-      setSpinning: setSpinning,
     };
   })();
 
