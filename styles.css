@@ -140,6 +140,15 @@ html.stars-transfer[data-bg="stars"] .stars {
   animation-play-state: paused;
 }
 
+html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(6, 6, 18, 0.66);
+}
+
 .star {
   position: absolute;
   background: #fff;
