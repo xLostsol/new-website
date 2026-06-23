@@ -10,7 +10,17 @@
 // The galaxy is one of two background modes (the other is a calm starfield).
 // It builds lazily and exposes window.__bgGalaxy.start()/stop() so "Stars"
 // mode fully halts the WebGL render loop instead of just hiding the canvas.
-import * as THREE from "https://cdn.skypack.dev/three@0.136.0";
+//
+// Three.js is imported lazily inside build(), so Stars mode (the default) never
+// downloads or parses the 3D engine. Once loaded it is cached for any rebuild.
+var threeMod = null;
+function loadThree() {
+  if (threeMod) return Promise.resolve(threeMod);
+  return import("https://cdn.skypack.dev/three@0.136.0").then(function (m) {
+    threeMod = m;
+    return m;
+  });
+}
 
 var prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)"
@@ -24,6 +34,8 @@ var Galaxy = (function () {
   var loop = null;
   var scene = null; // kept at module scope so dispose() can free its resources
   var guRef = null; // reference to the shared uniforms, for live color changes
+  var buildPromise = null; // de-dupes the async (Three.js) build
+  var startRequested = false; // tracks intent across the async build
 
   // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
   // here so the chosen look is in place the moment the galaxy first builds.
@@ -52,8 +64,10 @@ var Galaxy = (function () {
   } catch (e) {}
 
   // Heavy one-time setup: only runs the first time the galaxy is shown
-  function build() {
+  async function build() {
+    var THREE;
     try {
+      THREE = await loadThree();
       // depth/stencil buffers are pure waste here (the points draw additively
       // with depthTest:false), so disabling them frees a whole buffer's worth
       // of GPU memory per context. pixelRatio is capped at 1 so a scaled /
@@ -566,10 +580,21 @@ var Galaxy = (function () {
     return true;
   }
 
-  function start() {
+  // Build is async now (it lazy-loads Three.js), so guard against a mode switch
+  // while the engine is still loading: stop() clears the intent, and start()
+  // only spins the loop up if it is still wanted once build resolves.
+  async function start() {
     if (prefersReducedMotion || !sky) return;
-    if (!inited && !build()) return;
-    if (renderer && !running) {
+    startRequested = true;
+    if (!inited) {
+      if (!buildPromise) buildPromise = build();
+      var ok = await buildPromise;
+      if (!ok) {
+        buildPromise = null;
+        return;
+      }
+    }
+    if (startRequested && renderer && !running) {
       renderer.setAnimationLoop(loop);
       running = true;
     }
@@ -577,6 +602,7 @@ var Galaxy = (function () {
 
   // Halt the render loop entirely so Stars mode costs no GPU
   function stop() {
+    startRequested = false;
     if (renderer && running) {
       renderer.setAnimationLoop(null);
       running = false;
@@ -609,6 +635,8 @@ var Galaxy = (function () {
     if (sky) sky.classList.remove("has-canvas");
     guRef = null;
     inited = false;
+    buildPromise = null;
+    startRequested = false;
   }
 
   // Change the galaxy gradient (core hex -> edge hex). Works before the galaxy
