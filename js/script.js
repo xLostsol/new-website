@@ -157,6 +157,15 @@
     }, 380);
   });
 
+  // Drop the enter-transition attribute once its animations are done;
+  // its "both" fill would otherwise pin main at opacity 1 forever and
+  // override the immersive-mode UI fade.
+  if (document.documentElement.hasAttribute("data-enter")) {
+    setTimeout(function () {
+      document.documentElement.removeAttribute("data-enter");
+    }, 1700);
+  }
+
   window.addEventListener("pageshow", function (event) {
     if (event.persisted) {
       var root = document.documentElement;

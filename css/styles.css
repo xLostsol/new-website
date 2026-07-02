@@ -1687,6 +1687,12 @@ html[data-enter="back"] main {
   animation: page-in-left 0.6s var(--ease-apple) both;
 }
 
+/* Immersive must beat the enter animations above: their "both" fill would
+   otherwise pin main at full opacity and keep the UI visible. */
+html.immersive main {
+  animation: none;
+}
+
 html.page-exit-forward #space-background {
   transform: scale(1.04) translateX(-1.5%);
 }
