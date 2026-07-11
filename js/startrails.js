@@ -1,8 +1,7 @@
 (function () {
   var sky = document.getElementById("space-background");
-  var prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var prefersReducedMotion = motionQuery.matches;
 
   var StarTrails = (function () {
     var inited = false;
@@ -18,9 +17,10 @@
     var rotation = 0;
     var raf = null;
     var last = 0;
+    var resizeTimer = null;
+    var listenerRecords = [];
 
     var SPIN_MAX = 0.5;
-    var FADE = 0.05;
     var DEFAULT_PCT = 40;
     var ZOOM_MIN = 0.45;
     var ZOOM_MAX = 3;
@@ -40,8 +40,8 @@
       return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255);
     };
 
-    var bgRGB = "5,6,15";
-    var starRGB = "255,255,255";
+    var bgRGB = "8,11,10";
+    var starRGB = "242,245,243";
     try {
       var cs = JSON.parse(localStorage.getItem("stars-colors"));
       if (cs) {
@@ -52,16 +52,34 @@
       }
     } catch (e) {}
 
-    // Cached fill strings so the render loop never builds them per star/frame.
-    // restyle() refreshes them whenever the palette changes (see setColors).
+    // Cached fill strings keep per-star color work out of the render loop.
     var bgFill = "rgb(" + bgRGB + ")";
-    var fadeStyle = "rgba(" + bgRGB + "," + FADE + ")";
     var restyle = function () {
       bgFill = "rgb(" + bgRGB + ")";
-      fadeStyle = "rgba(" + bgRGB + "," + FADE + ")";
       for (var i = 0; i < stars.length; i++) {
         stars[i].style = "rgba(" + starRGB + "," + stars[i].br + ")";
       }
+    };
+
+    var listen = function (target, type, handler, options) {
+      target.addEventListener(type, handler, options);
+      listenerRecords.push({
+        target: target,
+        type: type,
+        handler: handler,
+        options: options,
+      });
+    };
+
+    var removeBuildListeners = function () {
+      listenerRecords.forEach(function (record) {
+        record.target.removeEventListener(
+          record.type,
+          record.handler,
+          record.options
+        );
+      });
+      listenerRecords = [];
     };
 
     var spinRate = (DEFAULT_PCT / 100) * SPIN_MAX;
@@ -95,7 +113,7 @@
       var diag = Math.sqrt(w * w + h * h);
       var Rmax = diag * 0.62;
       var small = w < 768;
-      var count = small ? 320 : 620;
+      var count = small ? 240 : 480;
       for (var i = 0; i < count; i++) {
         var r = Rmax * Math.sqrt(Math.random());
         var a0 = Math.random() * Math.PI * 2;
@@ -133,7 +151,8 @@
     }
 
     function frame(now) {
-      raf = requestAnimationFrame(frame);
+      raf = null;
+      if (!shouldAnimate()) return;
       var delta = last ? Math.min((now - last) / 1000, 0.05) : 0.016;
       last = now;
 
@@ -141,7 +160,8 @@
       rotation += spinRate * delta;
 
       ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = fadeStyle;
+      ctx.fillStyle =
+        "rgba(" + bgRGB + "," + (1 - Math.exp(-3.08 * delta)) + ")";
       ctx.fillRect(0, 0, w, h);
 
       ctx.globalCompositeOperation = "lighter";
@@ -165,12 +185,45 @@
         }
       }
       ctx.globalCompositeOperation = "source-over";
+      if (shouldAnimate()) raf = requestAnimationFrame(frame);
+    }
+
+    function shouldAnimate() {
+      return (
+        running &&
+        !prefersReducedMotion &&
+        !document.hidden &&
+        Math.abs(spinRate) > 0.0001
+      );
+    }
+
+    function cancelLoop() {
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+    }
+
+    function syncLoop() {
+      if (!running) return;
+      if (document.hidden) {
+        cancelLoop();
+        return;
+      }
+      if (!shouldAnimate()) {
+        cancelLoop();
+        drawStatic();
+        return;
+      }
+      if (!raf) {
+        clearDark();
+        last = 0;
+        raf = requestAnimationFrame(frame);
+      }
     }
 
     function repaint() {
       if (!running) return;
-      if (prefersReducedMotion) drawStatic();
-      else clearDark();
+      if (shouldAnimate()) clearDark();
+      else drawStatic();
     }
 
     function build() {
@@ -182,19 +235,20 @@
       sizeCanvas();
       makeStars();
 
-      var resizeT = null;
-      window.addEventListener("resize", function () {
+      listen(window, "resize", function () {
         if (!running) return;
-        clearTimeout(resizeT);
-        resizeT = setTimeout(function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+          resizeTimer = null;
+          if (!running || !canvas || !ctx) return;
           sizeCanvas();
           makeStars();
-          if (prefersReducedMotion) drawStatic();
-          else clearDark();
+          repaint();
         }, 150);
       });
 
-      window.addEventListener(
+      listen(
+        window,
         "wheel",
         function (e) {
           if (!running) return;
@@ -218,24 +272,24 @@
     function start() {
       if (!sky) return;
       if (!inited) build();
+      if (w !== window.innerWidth || h !== window.innerHeight) {
+        sizeCanvas();
+        makeStars();
+      }
       canvas.classList.add("show");
-      if (running) return;
-      running = true;
-      if (prefersReducedMotion) {
-        drawStatic();
+      if (running) {
+        syncLoop();
         return;
       }
-      clearDark();
-      last = 0;
-      raf = requestAnimationFrame(frame);
+      running = true;
+      syncLoop();
     }
 
     function stop() {
       running = false;
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = null;
-      }
+      clearTimeout(resizeTimer);
+      resizeTimer = null;
+      cancelLoop();
       if (canvas) {
         canvas.classList.remove("show");
         if (ctx) {
@@ -248,6 +302,7 @@
     function setSpin(value) {
       var n = clamp(Number(value) || 0, -100, 100);
       spinRate = (n / 100) * SPIN_MAX;
+      syncLoop();
     }
 
     function setColors(bgHex, starHex) {
@@ -266,6 +321,7 @@
 
     function dispose() {
       stop();
+      removeBuildListeners();
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
       canvas = null;
       ctx = null;
@@ -280,6 +336,7 @@
       setSpin: setSpin,
       setColors: setColors,
       setZoom: setZoom,
+      syncMotion: syncLoop,
     };
   })();
 
@@ -287,5 +344,14 @@
 
   window.addEventListener("pagehide", function (e) {
     if (!e.persisted) StarTrails.dispose();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    StarTrails.syncMotion();
+  });
+
+  motionQuery.addEventListener("change", function (event) {
+    prefersReducedMotion = event.matches;
+    StarTrails.syncMotion();
   });
 })();

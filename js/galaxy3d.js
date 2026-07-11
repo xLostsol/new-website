@@ -11,20 +11,29 @@
 // It builds lazily and exposes window.__bgGalaxy.start()/stop() so "Stars"
 // mode fully halts the WebGL render loop instead of just hiding the canvas.
 //
-// Three.js is imported lazily inside build(), so Stars mode (the default) never
-// downloads or parses the 3D engine. Once loaded it is cached for any rebuild.
+// The pinned local Three.js r136 module is imported lazily inside build(), so
+// Stars mode (the default) never downloads or parses the 3D engine. Once loaded
+// it is cached for any rebuild.
 var threeMod = null;
+var threePromise = null;
 function loadThree() {
   if (threeMod) return Promise.resolve(threeMod);
-  return import("https://cdn.skypack.dev/three@0.136.0").then(function (m) {
-    threeMod = m;
-    return m;
-  });
+  if (!threePromise) {
+    threePromise = import("./vendor/three.module.min.js?v=136")
+      .then(function (m) {
+        threeMod = m;
+        return m;
+      })
+      .catch(function (error) {
+        threePromise = null;
+        throw error;
+      });
+  }
+  return threePromise;
 }
 
-var prefersReducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
-).matches;
+var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+var prefersReducedMotion = motionQuery.matches;
 var sky = document.getElementById("space-background");
 
 var Galaxy = (function () {
@@ -36,6 +45,30 @@ var Galaxy = (function () {
   var guRef = null; // reference to the shared uniforms, for live color changes
   var buildPromise = null; // de-dupes the async (Three.js) build
   var startRequested = false; // tracks intent across the async build
+  var buildGeneration = 0; // invalidates a pending build before it allocates
+  var listenerRecords = [];
+  var resetInteraction = null;
+
+  var listen = function (target, type, handler, options) {
+    target.addEventListener(type, handler, options);
+    listenerRecords.push({
+      target: target,
+      type: type,
+      handler: handler,
+      options: options,
+    });
+  };
+
+  var removeBuildListeners = function () {
+    listenerRecords.forEach(function (record) {
+      record.target.removeEventListener(
+        record.type,
+        record.handler,
+        record.options
+      );
+    });
+    listenerRecords = [];
+  };
 
   // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
   // here so the chosen look is in place the moment the galaxy first builds.
@@ -64,10 +97,11 @@ var Galaxy = (function () {
   } catch (e) {}
 
   // Heavy one-time setup: only runs the first time the galaxy is shown
-  async function build() {
+  async function build(generation) {
     var THREE;
     try {
       THREE = await loadThree();
+      if (generation !== buildGeneration || !startRequested) return false;
       // depth/stencil buffers are pure waste here (the points draw additively
       // with depthTest:false), so disabling them frees a whole buffer's worth
       // of GPU memory per context. pixelRatio is capped at 1 so a scaled /
@@ -162,7 +196,7 @@ var Galaxy = (function () {
     // framing in the render loop instead of snapping
     var lastWidth = window.innerWidth;
     var lastHeight = window.innerHeight;
-    window.addEventListener("resize", function () {
+    listen(window, "resize", function () {
       var w = window.innerWidth;
       var h = window.innerHeight;
       if (w === lastWidth && Math.abs(h - lastHeight) < 160) return;
@@ -173,8 +207,8 @@ var Galaxy = (function () {
     });
 
     var small = window.innerWidth < 768;
-    var CORE_POINTS = small ? 12000 : 35000;
-    var DISK_POINTS = small ? 25000 : 70000;
+    var CORE_POINTS = small ? 8000 : 20000;
+    var DISK_POINTS = small ? 16000 : 40000;
 
     var makeAttributes = function (count, makePoint) {
       var pts = [];
@@ -312,15 +346,14 @@ var Galaxy = (function () {
     applyCamera(currentDist);
 
     // ----- Interaction: drag to spin, scroll/pinch to zoom, push points -----
-    var enterDir = document.documentElement.getAttribute("data-enter");
-    var spinVel =
-      enterDir === "back" ? -1.4 : enterDir === "forward" ? 1.4 : 0.5;
+    var spinVel = 0.25;
     var rotY = 0; // accumulated spin around the vertical axis
     var tilt = 0; // current tilt, eases back to level when released
     var dragging = false;
     var lastX = 0;
     var lastY = 0;
-    var lastDx = 0;
+    var lastMoveAt = 0;
+    var dragVelocity = 0;
     var ROT = 0.006; // radians per pixel dragged
     var IDLE_SPIN = 0.04; // gentle constant drift so it always feels alive
 
@@ -369,7 +402,7 @@ var Galaxy = (function () {
     var HERO_PAD_Y = 160;
     var paletteEl = document.querySelector(".palette");
     var uiEls = document.querySelectorAll(
-      "#navbar, .content-section, .hero-content, .site-footer, .bg-toggle, .palette, .palette-panel"
+      "#navbar, .content-section, .hero-content, .home-highlights, .not-found, .site-footer, .bg-toggle, .palette, .palette-panel"
     );
     var uiPadX = [];
     var uiPadY = [];
@@ -403,7 +436,8 @@ var Galaxy = (function () {
       return false;
     };
 
-    window.addEventListener(
+    listen(
+      window,
       "pointermove",
       function (e) {
         if (pointers.has(e.pointerId)) {
@@ -443,11 +477,17 @@ var Galaxy = (function () {
 
         var dx = e.clientX - lastX;
         var dy = e.clientY - lastY;
+        var moveAt = e.timeStamp || 0;
+        var moveDelta = lastMoveAt ? Math.max(1, moveAt - lastMoveAt) / 1000 : 0;
         lastX = e.clientX;
         lastY = e.clientY;
+        lastMoveAt = moveAt;
 
         if (dragging) {
-          lastDx = dx;
+          if (moveDelta) {
+            var instantVelocity = (dx * ROT) / moveDelta;
+            dragVelocity = dragVelocity * 0.65 + instantVelocity * 0.35;
+          }
           rotY += dx * ROT;
           tilt = Math.max(-0.7, Math.min(0.7, tilt + dy * ROT));
           mouseSpeed = Math.min(40, mouseSpeed + Math.hypot(dx, dy));
@@ -463,7 +503,8 @@ var Galaxy = (function () {
     // immersive mode) so the page still scrolls normally while reading.
     // Unlike pointermove this is a low-frequency cold path, so it measures
     // directly (one read per wheel tick); must be non-passive to preventDefault.
-    window.addEventListener(
+    listen(
+      window,
       "wheel",
       function (e) {
         if (!running || !isGalaxy()) return;
@@ -480,7 +521,8 @@ var Galaxy = (function () {
 
     // UI rects are viewport-relative, so they shift as the page scrolls; flag
     // a recompute (the loop measures). Passive so it never blocks scrolling.
-    window.addEventListener(
+    listen(
+      window,
       "scroll",
       function () {
         cursorDirty = true;
@@ -488,8 +530,10 @@ var Galaxy = (function () {
       { passive: true }
     );
 
-    window.addEventListener("pointerdown", function (e) {
+    listen(window, "pointerdown", function (e) {
       if (!running || !isGalaxy()) return;
+      if (isInteractive(e.target)) return;
+      if (!isImmersive() && overUI(e.clientX, e.clientY)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // Second finger: switch from spin to pinch-zoom (immersive only)
       if (pointers.size >= 2) {
@@ -503,13 +547,13 @@ var Galaxy = (function () {
         }
         return;
       }
-      if (isInteractive(e.target)) return;
       // On touch, only grab in immersive mode so normal scrolling still works
       if (e.pointerType !== "mouse" && !isImmersive()) return;
       dragging = true;
       lastX = e.clientX;
       lastY = e.clientY;
-      lastDx = 0;
+      lastMoveAt = e.timeStamp || 0;
+      dragVelocity = 0;
       document.body.style.userSelect = "none";
     });
 
@@ -518,18 +562,30 @@ var Galaxy = (function () {
       if (pointers.size < 2) pinchPrev = 0;
       if (pointers.size === 0 && dragging) {
         dragging = false;
-        spinVel = lastDx * ROT * 14; // carry the fling as momentum
+        spinVel = Math.max(-SPIN_MAX, Math.min(SPIN_MAX, dragVelocity));
         document.body.style.userSelect = "";
       }
     };
-    window.addEventListener("pointerup", release);
-    window.addEventListener("pointercancel", release);
-    document.addEventListener("mouseleave", function () {
+    listen(window, "pointerup", release);
+    listen(window, "pointercancel", release);
+    listen(document, "mouseleave", function () {
       active = false;
     });
 
+    resetInteraction = function () {
+      pointers.clear();
+      pinchPrev = 0;
+      dragging = false;
+      active = false;
+      document.body.style.userSelect = "";
+    };
+
     var clock = new THREE.Clock();
-    loop = function () {
+    var lastRenderAt = 0;
+    loop = function (now) {
+      var imm = isImmersive();
+      if (!imm && now && now - lastRenderAt < 33) return;
+      lastRenderAt = now || lastRenderAt;
       var delta = Math.min(clock.getDelta(), 0.1);
       gu.time.value = clock.elapsedTime * 0.5 * Math.PI;
 
@@ -537,7 +593,6 @@ var Galaxy = (function () {
       // The layout read happens here, at most once per frame and only after a
       // move/scroll, so pointermove/wheel never force synchronous layout. In
       // immersive mode the UI is hidden, so everything reacts (no measuring).
-      var imm = isImmersive();
       if (imm) {
         active = true;
       } else if (cursorDirty) {
@@ -584,29 +639,48 @@ var Galaxy = (function () {
   // while the engine is still loading: stop() clears the intent, and start()
   // only spins the loop up if it is still wanted once build resolves.
   async function start() {
-    if (prefersReducedMotion || !sky) return;
+    if (prefersReducedMotion || document.hidden || !sky) return;
     startRequested = true;
     if (!inited) {
-      if (!buildPromise) buildPromise = build();
-      var ok = await buildPromise;
+      if (!buildPromise) {
+        buildGeneration++;
+        buildPromise = build(buildGeneration);
+      }
+      var pendingBuild = buildPromise;
+      var ok = false;
+      try {
+        ok = await pendingBuild;
+      } catch (e) {}
       if (!ok) {
-        buildPromise = null;
+        if (buildPromise === pendingBuild) buildPromise = null;
         return;
       }
     }
-    if (startRequested && renderer && !running) {
+    if (
+      startRequested &&
+      !prefersReducedMotion &&
+      !document.hidden &&
+      renderer &&
+      !running
+    ) {
       renderer.setAnimationLoop(loop);
       running = true;
     }
   }
 
+  function haltLoop() {
+    if (renderer && running) renderer.setAnimationLoop(null);
+    running = false;
+  }
+
   // Halt the render loop entirely so Stars mode costs no GPU
   function stop() {
     startRequested = false;
-    if (renderer && running) {
-      renderer.setAnimationLoop(null);
-      running = false;
+    if (!inited && buildPromise) {
+      buildGeneration++;
+      buildPromise = null;
     }
+    haltLoop();
   }
 
   // Release every GPU resource (geometries, materials, and crucially the WebGL
@@ -615,7 +689,13 @@ var Galaxy = (function () {
   // WebGL contexts (the browser caps them and leaks GPU memory otherwise). The
   // galaxy rebuilds cleanly if start() is ever called again.
   function dispose() {
-    stop();
+    startRequested = false;
+    buildGeneration++;
+    buildPromise = null;
+    haltLoop();
+    removeBuildListeners();
+    if (resetInteraction) resetInteraction();
+    resetInteraction = null;
     loop = null;
     if (scene) {
       scene.traverse(function (obj) {
@@ -635,8 +715,6 @@ var Galaxy = (function () {
     if (sky) sky.classList.remove("has-canvas");
     guRef = null;
     inited = false;
-    buildPromise = null;
-    startRequested = false;
   }
 
   // Change the galaxy gradient (core hex -> edge hex). Works before the galaxy
@@ -672,6 +750,19 @@ window.__bgGalaxy = Galaxy;
 // a bfcache freeze) so memory does not climb with every reload.
 window.addEventListener("pagehide", function (e) {
   if (!e.persisted) Galaxy.dispose();
+});
+
+document.addEventListener("visibilitychange", function () {
+  if (document.hidden) Galaxy.stop();
+  else if (document.documentElement.getAttribute("data-bg") === "galaxy")
+    Galaxy.start();
+});
+
+motionQuery.addEventListener("change", function (event) {
+  prefersReducedMotion = event.matches;
+  if (prefersReducedMotion) Galaxy.stop();
+  else if (document.documentElement.getAttribute("data-bg") === "galaxy")
+    Galaxy.start();
 });
 
 // Start immediately if the page loaded in galaxy mode (the inline head script

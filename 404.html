@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page not found | Joseph Bressani</title>
+    <meta
+      name="description"
+      content="That page could not be found. Return to Joseph Bressani's portfolio."
+    />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#080b0a" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/styles.css?v=29" />
+    <script>
+      (function () { var d = document.documentElement; d.classList.add("js"); try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="space-background" aria-hidden="true">
+      <div class="stars"></div>
+    </div>
+
+    <header id="navbar">
+      <nav class="nav-container" aria-label="Primary">
+        <a href="/" class="logo">JB<span>.</span></a>
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="nav-menu"
+          aria-label="Toggle navigation"
+        >
+          <span></span><span></span><span></span>
+        </button>
+        <ul id="nav-menu" class="nav-links">
+          <li><a href="/">Home</a></li>
+          <li><a href="/experience.html">Experience</a></li>
+          <li><a href="/projects.html">Projects</a></li>
+          <li><a href="/education.html">Education</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="main" class="not-found">
+      <section aria-labelledby="not-found-title">
+        <p class="eyebrow">404 / off course</p>
+        <h1 id="not-found-title">That page isn't here.</h1>
+        <p>The link may be old, or the address may be off by a character.</p>
+        <div class="cta-buttons">
+          <a href="/" class="cta-button">Go home</a>
+          <a href="/projects.html" class="cta-button secondary">View projects</a>
+        </div>
+      </section>
+    </main>
+
+    <div class="spin-control" role="group" aria-label="Background spin">
+      <button type="button" class="spin-reset" aria-label="Reset spin" title="Reset spin">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+      </button>
+      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Spin speed" />
+    </div>
+
+    <div class="bg-toggle" role="group" aria-label="Background style">
+      <button type="button" class="bg-toggle-btn" data-bg-mode="stars" aria-pressed="true" title="Calm starry background">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L10.2 5.8 14.5 8 10.2 10.2 8 14.5 5.8 10.2 1.5 8 5.8 5.8 Z"/></svg>
+        <span class="bg-toggle-label">Stars</span>
+      </button>
+      <button type="button" class="bg-toggle-btn" data-bg-mode="galaxy" aria-pressed="false" title="Animated galaxy">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="1.25"/><path d="M9 6.5c2.4-1.2 4.6.6 3.7 3-.6 1.7-2.8 2.8-5.7 2.5"/><path d="M7 9.5c-2.4 1.2-4.6-.6-3.7-3 .6-1.7 2.8-2.8 5.7-2.5"/></svg>
+        <span class="bg-toggle-label">Galaxy</span>
+      </button>
+      <button type="button" class="bg-immersive-btn" aria-pressed="false" title="Explore the background" aria-label="Explore the background">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2H2v4M10 2h4v4M6 14H2v-4M10 14h4v-4"/></svg>
+        <span class="bg-toggle-label">Explore</span>
+      </button>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-copy">
+          <p>&copy; <span id="year">2026</span> Joseph Bressani</p>
+          <p class="footer-colophon">Built by Joseph with HTML, CSS, and JavaScript.</p>
+        </div>
+        <ul class="footer-links">
+          <li><a href="/projects.html">Projects</a></li>
+          <li><a href="/contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+
+    <script src="/js/startrails.js?v=9" defer></script>
+    <script src="/js/script.js?v=21" defer></script>
+    <script type="module" src="/js/galaxy3d.js?v=21"></script>
+  </body>
+</html>

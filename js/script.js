@@ -1,23 +1,29 @@
 (function () {
   "use strict";
 
-  var prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
-
   var navToggle = document.querySelector(".nav-toggle");
   var navMenu = document.getElementById("nav-menu");
 
   if (navToggle && navMenu) {
-    var closeMenu = function () {
+    var syncMenuInert = function () {
+      var hidden =
+        window.innerWidth <= 768 && !navMenu.classList.contains("open");
+      if (hidden) navMenu.setAttribute("inert", "");
+      else navMenu.removeAttribute("inert");
+    };
+
+    var closeMenu = function (returnFocus) {
       navToggle.setAttribute("aria-expanded", "false");
       navMenu.classList.remove("open");
+      syncMenuInert();
+      if (returnFocus) navToggle.focus();
     };
 
     navToggle.addEventListener("click", function () {
       var isOpen = navToggle.getAttribute("aria-expanded") === "true";
       navToggle.setAttribute("aria-expanded", String(!isOpen));
       navMenu.classList.toggle("open", !isOpen);
+      syncMenuInert();
     });
 
     navMenu.addEventListener("click", function (event) {
@@ -25,12 +31,17 @@
     });
 
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") closeMenu();
+      if (event.key === "Escape" && navMenu.classList.contains("open")) {
+        closeMenu(true);
+      }
     });
 
     window.addEventListener("resize", function () {
       if (window.innerWidth > 768) closeMenu();
+      else syncMenuInert();
     });
+
+    syncMenuInert();
   }
 
   var navbar = document.getElementById("navbar");
@@ -42,39 +53,15 @@
     onScroll();
   }
 
-  var revealTargets = document.querySelectorAll(".reveal");
-  if (revealTargets.length) {
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      revealTargets.forEach(function (el) {
-        el.classList.add("visible");
-      });
-    } else {
-      var observer = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("visible");
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
-      );
-      revealTargets.forEach(function (el) {
-        observer.observe(el);
-      });
-    }
-  }
-
   var sky = document.getElementById("space-background");
   if (sky) {
     var starLayer = sky.querySelector(".stars") || sky;
     var fragment = document.createDocumentFragment();
-    var STAR_COUNT = 300;
+    var STAR_COUNT = window.innerWidth < 768 ? 110 : 150;
 
     for (var i = 0; i < STAR_COUNT; i++) {
       var star = document.createElement("span");
-      star.className = Math.random() < 0.08 ? "star star-bright" : "star";
+      star.className = Math.random() < 0.13 ? "star star-bright" : "star";
 
       var size = Math.random() * 2 + 0.5;
       star.style.width = size + "px";
@@ -83,11 +70,11 @@
       star.style.left = Math.random() * 100 + "%";
       star.style.setProperty(
         "--twinkle-duration",
-        (Math.random() * 4 + 3).toFixed(2) + "s"
+        (Math.random() * 8 + 12).toFixed(2) + "s"
       );
       star.style.setProperty(
         "--twinkle-delay",
-        (Math.random() * 6).toFixed(2) + "s"
+        (Math.random() * 12).toFixed(2) + "s"
       );
       star.style.setProperty(
         "--star-opacity",
@@ -100,86 +87,91 @@
     starLayer.appendChild(fragment);
   }
 
-  var PAGE_ORDER = [
-    "index.html",
-    "experience.html",
-    "projects.html",
-    "education.html",
-    "contact.html",
-  ];
-
-  var pageFile = function (path) {
-    var file = path.split("/").pop();
-    return file === "" ? "index.html" : file;
-  };
-
-  var pageIndex = function (path) {
-    var i = PAGE_ORDER.indexOf(pageFile(path));
-    return i === -1 ? 0 : i;
-  };
-
-  var currentPage = String(pageIndex(location.pathname));
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
-      document.documentElement.setAttribute("data-page", currentPage);
-    });
-  });
-  try {
-    sessionStorage.setItem("prev-page", currentPage);
-  } catch (e) {}
-
-  document.addEventListener("click", function (event) {
-    if (prefersReducedMotion) return;
-    if (event.defaultPrevented || event.button !== 0) return;
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-      return;
-    if (document.documentElement.getAttribute("data-bg") !== "galaxy") return;
-
-    var link = event.target.closest("a");
-    if (!link || link.target === "_blank" || link.origin !== location.origin)
-      return;
-
-    var file = pageFile(link.pathname);
-    if (PAGE_ORDER.indexOf(file) === -1) return;
-    if (file === pageFile(location.pathname)) return;
-
-    event.preventDefault();
-    var dir =
-      pageIndex(link.pathname) > pageIndex(location.pathname)
-        ? "forward"
-        : "back";
-    try {
-      sessionStorage.setItem("nav-dir", dir);
-    } catch (e) {}
-    document.documentElement.classList.add("page-exit-" + dir);
-    setTimeout(function () {
-      location.href = link.href;
-    }, 380);
-  });
-
-  // Drop the enter-transition attribute once its animations are done;
-  // its "both" fill would otherwise pin main at opacity 1 forever and
-  // override the immersive-mode UI fade.
-  if (document.documentElement.hasAttribute("data-enter")) {
-    setTimeout(function () {
-      document.documentElement.removeAttribute("data-enter");
-    }, 1700);
-  }
-
-  window.addEventListener("pageshow", function (event) {
-    if (event.persisted) {
-      var root = document.documentElement;
-      root.classList.remove("page-exit-forward", "page-exit-back");
-      root.removeAttribute("data-enter");
-    }
-  });
-
   var yearEl = document.getElementById("year");
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
   }
 
+  var sourceUpdate = document.querySelector("[data-source-update]");
+  if (sourceUpdate && "fetch" in window) {
+    var sourceTime = sourceUpdate.querySelector("[data-source-update-time]");
+    var sourceLink = sourceUpdate.querySelector("[data-source-update-link]");
+    var sourceCacheKey = "portfolio-source-update-v2";
+    var sourceCacheTtl = 12 * 60 * 60 * 1000;
+
+    var showSourceUpdate = function (entry) {
+      if (!entry || !entry.date || !entry.url || !sourceTime || !sourceLink)
+        return;
+      var date = new Date(entry.date);
+      if (isNaN(date.getTime())) return;
+      sourceTime.dateTime = date.toISOString();
+      sourceTime.textContent = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+      sourceLink.href = entry.url;
+      sourceLink.setAttribute(
+        "aria-label",
+        "View the latest source commit (opens in a new tab)"
+      );
+      sourceUpdate.hidden = false;
+    };
+
+    var cachedUpdate = null;
+    try {
+      cachedUpdate = JSON.parse(localStorage.getItem(sourceCacheKey));
+    } catch (e) {}
+
+    if (cachedUpdate) {
+      showSourceUpdate(cachedUpdate);
+    }
+    var cacheAge = cachedUpdate
+      ? Date.now() - Number(cachedUpdate.cachedAt || 0)
+      : sourceCacheTtl;
+    var cacheFresh = cacheAge >= 0 && cacheAge < sourceCacheTtl;
+
+    if (!cacheFresh) {
+      var sourceController =
+        "AbortController" in window ? new AbortController() : null;
+      var sourceTimeout = sourceController
+        ? setTimeout(function () {
+            sourceController.abort();
+          }, 4000)
+        : null;
+      fetch(
+        "https://api.github.com/repos/xLostsol/new-website/commits?sha=main&per_page=1",
+        sourceController ? { signal: sourceController.signal } : undefined
+      )
+        .then(function (response) {
+          if (!response.ok) throw new Error("Source update unavailable");
+          return response.json();
+        })
+        .then(function (data) {
+          var commit = Array.isArray(data) ? data[0] : null;
+          var entry =
+            commit && commit.commit && commit.commit.committer
+              ? {
+                  date: commit.commit.committer.date,
+                  url: commit.html_url,
+                  cachedAt: Date.now(),
+                }
+              : null;
+          if (!entry || !entry.date || !entry.url) return;
+          try {
+            localStorage.setItem(sourceCacheKey, JSON.stringify(entry));
+          } catch (e) {}
+          showSourceUpdate(entry);
+        })
+        .catch(function () {})
+        .then(function () {
+          if (sourceTimeout) clearTimeout(sourceTimeout);
+        });
+    }
+  }
+
   var bgButtons = document.querySelectorAll(".bg-toggle-btn");
+  var immersiveButton = document.querySelector(".bg-immersive-btn");
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
     var spinSync = null;
@@ -214,6 +206,7 @@
         else window.__bgGalaxy.stop();
       }
       syncStarsBg();
+      if (spinSync) spinSync();
       if (persist) {
         try {
           localStorage.setItem("bg-mode", mode);
@@ -222,8 +215,39 @@
     };
 
     var hintEl = null;
+    var immersiveRegions = document.querySelectorAll(
+      ".skip-link, #navbar, main, .site-footer"
+    );
+    var immersiveSpin = document.querySelector(".spin-control");
     var setImmersive = function (on) {
+      document
+        .querySelectorAll('.palette[data-open="true"]')
+        .forEach(function (openPalette) {
+          openPalette.setAttribute("data-open", "false");
+          var openButton = openPalette.querySelector(".palette-btn");
+          var openPanel = openPalette.querySelector(".palette-panel");
+          if (openButton) openButton.setAttribute("aria-expanded", "false");
+          if (openPanel) openPanel.setAttribute("aria-hidden", "true");
+        });
       bgRoot.classList.toggle("immersive", on);
+      immersiveRegions.forEach(function (region) {
+        if (on) region.setAttribute("inert", "");
+        else region.removeAttribute("inert");
+      });
+      if (immersiveSpin) {
+        if (on) immersiveSpin.removeAttribute("inert");
+        else immersiveSpin.setAttribute("inert", "");
+      }
+      if (immersiveButton) {
+        immersiveButton.setAttribute("aria-pressed", String(on));
+        immersiveButton.setAttribute(
+          "aria-label",
+          on ? "Exit background view" : "Explore the background"
+        );
+        immersiveButton.title = on
+          ? "Exit background view"
+          : "Explore the background";
+      }
       var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
       syncStarsBg();
       if (spinSync) spinSync();
@@ -231,36 +255,47 @@
         if (!hintEl) {
           hintEl = document.createElement("div");
           hintEl.className = "bg-immersive-hint";
+          hintEl.setAttribute("role", "status");
           document.body.appendChild(hintEl);
         }
+        hintEl.hidden = false;
         hintEl.textContent = stars
-          ? "Slider spins the star trails · Esc or Stars to exit"
-          : "Drag to spin · slider sets a steady spin · Esc or Galaxy to exit";
+          ? "Slider spins the star trails \u00b7 Esc or Explore to exit"
+          : "Drag to spin \u00b7 slider sets a steady spin \u00b7 Esc or Explore to exit";
         hintEl.classList.remove("show");
         void hintEl.offsetWidth;
         hintEl.classList.add("show");
+      } else if (hintEl) {
+        hintEl.classList.remove("show");
+        hintEl.hidden = true;
       }
     };
 
     applyBgMode(bgRoot.getAttribute("data-bg") || "stars", false);
+    setImmersive(false);
 
     bgButtons.forEach(function (b) {
       b.addEventListener("click", function () {
         var target = b.getAttribute("data-bg-mode");
-        if (target === bgRoot.getAttribute("data-bg")) {
-          setImmersive(!bgRoot.classList.contains("immersive"));
-        } else {
+        if (target !== bgRoot.getAttribute("data-bg")) {
           setImmersive(false);
           applyBgMode(target, true);
         }
       });
     });
 
+    if (immersiveButton) {
+      immersiveButton.addEventListener("click", function () {
+        setImmersive(!bgRoot.classList.contains("immersive"));
+      });
+    }
+
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && bgRoot.classList.contains("immersive")) {
         var openPal = document.querySelector('.palette[data-open="true"]');
         if (openPal) return;
         setImmersive(false);
+        if (immersiveButton) immersiveButton.focus();
       }
     });
 
@@ -349,9 +384,14 @@
 
   var setupPalette = function (palette, cfg) {
     var paletteBtn = palette.querySelector(".palette-btn");
+    var palettePanel = palette.querySelector(".palette-panel");
     var swatches = palette.querySelectorAll(".palette-swatch");
     var sv = palette.querySelector(".cp-sv");
     var svThumb = palette.querySelector(".cp-sv-thumb");
+    var saturation = palette.querySelector(".cp-saturation");
+    var saturationValue = palette.querySelector(".cp-saturation-value");
+    var brightness = palette.querySelector(".cp-brightness");
+    var brightnessValue = palette.querySelector(".cp-brightness-value");
     var hue = palette.querySelector(".cp-hue");
     var hexInput = palette.querySelector(".cp-hex");
     var targets = palette.querySelectorAll(".custom-target");
@@ -398,11 +438,21 @@
 
     var renderPicker = function (skipHex) {
       var c = endpoints[activeTarget];
-      if (sv) sv.style.backgroundColor = "hsl(" + c.h + ", 100%, 50%)";
+      if (sv) {
+        sv.style.backgroundColor = "hsl(" + c.h + ", 100%, 50%)";
+      }
       if (svThumb) {
         svThumb.style.left = c.s * 100 + "%";
         svThumb.style.top = (1 - c.v) * 100 + "%";
         svThumb.style.backgroundColor = hexOf(activeTarget);
+      }
+      if (saturation) saturation.value = String(Math.round(c.s * 100));
+      if (saturationValue) {
+        saturationValue.textContent = Math.round(c.s * 100) + "%";
+      }
+      if (brightness) brightness.value = String(Math.round(c.v * 100));
+      if (brightnessValue) {
+        brightnessValue.textContent = Math.round(c.v * 100) + "%";
       }
       if (hue) hue.value = String(Math.round(c.h));
       if (hexInput && !skipHex) {
@@ -428,14 +478,20 @@
     var savedColors = cfg.presets[cfg.defaultName];
     try {
       var sn = localStorage.getItem(cfg.storageName);
-      if (sn) savedName = sn;
+      if (sn && (sn === "custom" || cfg.presets[sn])) savedName = sn;
+      if (savedName !== "custom") {
+        savedColors = cfg.presets[savedName] || cfg.presets[cfg.defaultName];
+      }
       var scStored = JSON.parse(localStorage.getItem(cfg.storageColors));
-      if (scStored) {
+      if (savedName === "custom" && scStored) {
         var ok = true;
         targetKeys.forEach(function (k) {
           if (!scStored[k]) ok = false;
         });
         if (ok) savedColors = scStored;
+        else savedName = cfg.defaultName;
+      } else if (savedName === "custom") {
+        savedName = cfg.defaultName;
       }
     } catch (e) {}
     targetKeys.forEach(function (k) {
@@ -448,7 +504,9 @@
     var setOpen = function (open) {
       palette.setAttribute("data-open", String(open));
       if (paletteBtn) paletteBtn.setAttribute("aria-expanded", String(open));
+      if (palettePanel) palettePanel.setAttribute("aria-hidden", String(!open));
     };
+    setOpen(false);
 
     if (paletteBtn) {
       paletteBtn.addEventListener("click", function (e) {
@@ -516,22 +574,24 @@
       };
       sv.addEventListener("pointerup", svEnd);
       sv.addEventListener("pointercancel", svEnd);
-      sv.addEventListener("keydown", function (e) {
-        var step = e.shiftKey ? 0.1 : 0.02;
-        var c = endpoints[activeTarget];
-        var done = true;
-        if (e.key === "ArrowLeft") c.s = clamp01(c.s - step);
-        else if (e.key === "ArrowRight") c.s = clamp01(c.s + step);
-        else if (e.key === "ArrowUp") c.v = clamp01(c.v + step);
-        else if (e.key === "ArrowDown") c.v = clamp01(c.v - step);
-        else done = false;
-        if (done) {
-          e.preventDefault();
-          renderPicker();
-          applyLive();
-          persistNow();
-        }
+    }
+
+    if (saturation) {
+      saturation.addEventListener("input", function () {
+        endpoints[activeTarget].s = clamp01(parseFloat(saturation.value) / 100);
+        renderPicker();
+        applyLive();
       });
+      saturation.addEventListener("change", persistNow);
+    }
+
+    if (brightness) {
+      brightness.addEventListener("input", function () {
+        endpoints[activeTarget].v = clamp01(parseFloat(brightness.value) / 100);
+        renderPicker();
+        applyLive();
+      });
+      brightness.addEventListener("change", persistNow);
     }
 
     if (hue) {
@@ -570,6 +630,7 @@
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && palette.getAttribute("data-open") === "true") {
         setOpen(false);
+        if (paletteBtn) paletteBtn.focus();
       }
     });
   };
@@ -598,7 +659,7 @@
   if (starsPalette) {
     setupPalette(starsPalette, {
       presets: {
-        default: { star: "#ffffff", bg: "#05060f" },
+        default: { star: "#f2f5f3", bg: "#080b0a" },
         cool: { star: "#9fd0ff", bg: "#070d1a" },
         warm: { star: "#ffb46b", bg: "#120806" },
         aurora: { star: "#7dffc4", bg: "#04120e" },
@@ -672,25 +733,98 @@
     }
   }
 
-  var spyCard = document.querySelector(".project-card.has-spy");
-  if (spyCard) {
-    var spyClicks = 0;
-    var spyTimer = null;
-    spyCard.addEventListener("click", function (e) {
-      if (e.target.closest("a")) return;
-      if (spyCard.classList.contains("spy-on")) {
-        spyCard.classList.remove("spy-on");
-        spyClicks = 0;
-        return;
+  var copyEmailButton = document.querySelector("[data-copy-email]");
+  if (copyEmailButton) {
+    var copyEmailStatus = document.getElementById("contact-email-status");
+    var copyResetTimer = null;
+    var legacyCopy = function (text) {
+      return new Promise(function (resolve, reject) {
+        var field = document.createElement("textarea");
+        field.value = text;
+        field.setAttribute("readonly", "");
+        field.setAttribute("aria-hidden", "true");
+        field.style.position = "fixed";
+        field.style.left = "-9999px";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        field.setSelectionRange(0, field.value.length);
+        try {
+          if (!document.execCommand("copy")) throw new Error("Copy failed");
+          resolve();
+        } catch (error) {
+          reject(error);
+        } finally {
+          field.remove();
+          copyEmailButton.focus();
+        }
+      });
+    };
+    var copyEmail = function (text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        var clipboardTimeout = new Promise(function (_, reject) {
+          setTimeout(function () {
+            reject(new Error("Clipboard request timed out"));
+          }, 1200);
+        });
+        return Promise.race([
+          navigator.clipboard.writeText(text),
+          clipboardTimeout,
+        ]).catch(function () {
+          return legacyCopy(text);
+        });
       }
-      spyClicks++;
-      clearTimeout(spyTimer);
-      spyTimer = setTimeout(function () {
-        spyClicks = 0;
-      }, 1600);
-      if (spyClicks >= 4) {
-        spyCard.classList.add("spy-on");
-        spyClicks = 0;
+      return legacyCopy(text);
+    };
+
+    copyEmailButton.addEventListener("click", function () {
+      var target = document.querySelector(
+        copyEmailButton.getAttribute("data-copy-email")
+      );
+      if (!target) return;
+      var email = target.textContent.trim();
+      if (copyEmailStatus) copyEmailStatus.textContent = "";
+      copyEmailButton.textContent = "Copying";
+      copyEmail(email)
+        .then(function () {
+          clearTimeout(copyResetTimer);
+          copyEmailButton.textContent = "Copied";
+          copyEmailButton.setAttribute("data-copied", "true");
+          if (copyEmailStatus) {
+            copyEmailStatus.textContent = "Email address copied to clipboard.";
+          }
+          copyResetTimer = setTimeout(function () {
+            copyEmailButton.textContent = "Copy email";
+            copyEmailButton.removeAttribute("data-copied");
+          }, 2200);
+        })
+        .catch(function () {
+          copyEmailButton.textContent = "Copy email";
+          copyEmailButton.removeAttribute("data-copied");
+          if (copyEmailStatus) {
+            copyEmailStatus.textContent =
+              "Copy failed. Select the email address to copy it.";
+          }
+        });
+    });
+  }
+
+  var spyCard = document.querySelector(".project-card.has-spy");
+  var spyTrigger = spyCard && spyCard.querySelector(".spy-trigger");
+  if (spyCard && spyTrigger) {
+    spyTrigger.addEventListener("click", function () {
+      var on = !spyCard.classList.contains("spy-on");
+      if (on) {
+        spyCard.querySelectorAll("img[data-src]").forEach(function (img) {
+          img.src = img.getAttribute("data-src");
+          img.removeAttribute("data-src");
+        });
+      }
+      spyCard.classList.toggle("spy-on", on);
+      spyTrigger.setAttribute("aria-pressed", String(on));
+      var spyLabel = spyTrigger.querySelector(".spy-trigger-label");
+      if (spyLabel) {
+        spyLabel.textContent = on ? "Hide the disguise" : "Try the disguise";
       }
     });
   }
