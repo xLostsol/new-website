@@ -10,7 +10,7 @@ custom domain.
 
 - `index.html`: Home with current-work and featured-project highlights
 - `experience.html`: Work experience
-- `projects.html`: Selected projects and live source-update signal
+- `projects.html`: Selected projects
 - `education.html`: Education and technical skills
 - `contact.html`: Contact links
 - `404.html`: Custom not-found page
@@ -19,11 +19,10 @@ custom domain.
 ## Features
 
 - Responsive layout with a mobile hamburger navigation
-- Three user-controlled background states: stars, a Three.js galaxy, and an
-  immersive canvas star-trail mode
-- Custom color palettes for both background modes
+- Two user-controlled background modes: stars and a Three.js galaxy
+- Custom galaxy color palettes
 - Social preview metadata and a custom Open Graph image
-- Recruiter-ready resume access and a display-only email copy control
+- Display-only email with a copy control
 - Locally hosted Space Grotesk and a lazily loaded, pinned Three.js module
 - Respects `prefers-reduced-motion`
 - No build step, just static files
@@ -34,5 +33,5 @@ Third-party source, version, hash, and license details are recorded in
 ## Local development
 
 Serve the repository root with any static file server. Root-relative routes are
-used for canonical home, favicon, and resume URLs, so `file://` previews are not
+used for canonical home and favicon URLs, so `file://` previews are not
 supported.

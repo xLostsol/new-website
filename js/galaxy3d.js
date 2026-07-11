@@ -72,10 +72,10 @@ var Galaxy = (function () {
 
   // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
   // here so the chosen look is in place the moment the galaxy first builds.
-  var colorIn = "#e39b00";
-  var colorOut = "#6432ff";
+  var colorIn = "#38bdf8";
+  var colorOut = "#4f46e5";
   try {
-    var savedColors = JSON.parse(localStorage.getItem("galaxy-colors"));
+    var savedColors = JSON.parse(localStorage.getItem("galaxy-colors-v2"));
     if (savedColors && savedColors.in && savedColors.out) {
       colorIn = savedColors.in;
       colorOut = savedColors.out;

@@ -92,106 +92,10 @@
     yearEl.textContent = new Date().getFullYear();
   }
 
-  var sourceUpdate = document.querySelector("[data-source-update]");
-  if (sourceUpdate && "fetch" in window) {
-    var sourceTime = sourceUpdate.querySelector("[data-source-update-time]");
-    var sourceLink = sourceUpdate.querySelector("[data-source-update-link]");
-    var sourceCacheKey = "portfolio-source-update-v2";
-    var sourceCacheTtl = 12 * 60 * 60 * 1000;
-
-    var showSourceUpdate = function (entry) {
-      if (!entry || !entry.date || !entry.url || !sourceTime || !sourceLink)
-        return;
-      var date = new Date(entry.date);
-      if (isNaN(date.getTime())) return;
-      sourceTime.dateTime = date.toISOString();
-      sourceTime.textContent = new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-      sourceLink.href = entry.url;
-      sourceLink.setAttribute(
-        "aria-label",
-        "View the latest source commit (opens in a new tab)"
-      );
-      sourceUpdate.hidden = false;
-    };
-
-    var cachedUpdate = null;
-    try {
-      cachedUpdate = JSON.parse(localStorage.getItem(sourceCacheKey));
-    } catch (e) {}
-
-    if (cachedUpdate) {
-      showSourceUpdate(cachedUpdate);
-    }
-    var cacheAge = cachedUpdate
-      ? Date.now() - Number(cachedUpdate.cachedAt || 0)
-      : sourceCacheTtl;
-    var cacheFresh = cacheAge >= 0 && cacheAge < sourceCacheTtl;
-
-    if (!cacheFresh) {
-      var sourceController =
-        "AbortController" in window ? new AbortController() : null;
-      var sourceTimeout = sourceController
-        ? setTimeout(function () {
-            sourceController.abort();
-          }, 4000)
-        : null;
-      fetch(
-        "https://api.github.com/repos/xLostsol/new-website/commits?sha=main&per_page=1",
-        sourceController ? { signal: sourceController.signal } : undefined
-      )
-        .then(function (response) {
-          if (!response.ok) throw new Error("Source update unavailable");
-          return response.json();
-        })
-        .then(function (data) {
-          var commit = Array.isArray(data) ? data[0] : null;
-          var entry =
-            commit && commit.commit && commit.commit.committer
-              ? {
-                  date: commit.commit.committer.date,
-                  url: commit.html_url,
-                  cachedAt: Date.now(),
-                }
-              : null;
-          if (!entry || !entry.date || !entry.url) return;
-          try {
-            localStorage.setItem(sourceCacheKey, JSON.stringify(entry));
-          } catch (e) {}
-          showSourceUpdate(entry);
-        })
-        .catch(function () {})
-        .then(function () {
-          if (sourceTimeout) clearTimeout(sourceTimeout);
-        });
-    }
-  }
-
   var bgButtons = document.querySelectorAll(".bg-toggle-btn");
-  var immersiveButton = document.querySelector(".bg-immersive-btn");
   if (bgButtons.length) {
     var bgRoot = document.documentElement;
     var spinSync = null;
-    var transferOn = function () {
-      try {
-        return localStorage.getItem("stars-transfer") === "1";
-      } catch (e) {
-        return false;
-      }
-    };
-    var syncStarsBg = function () {
-      var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
-      var immersive = bgRoot.classList.contains("immersive");
-      var keep = stars && transferOn();
-      bgRoot.classList.toggle("stars-transfer", keep);
-      if (window.__bgStars) {
-        if (stars && (immersive || keep)) window.__bgStars.start();
-        else window.__bgStars.stop();
-      }
-    };
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
       bgRoot.setAttribute("data-bg", mode);
@@ -205,7 +109,7 @@
         if (mode === "galaxy") window.__bgGalaxy.start();
         else window.__bgGalaxy.stop();
       }
-      syncStarsBg();
+      if (window.__bgStars) window.__bgStars.stop();
       if (spinSync) spinSync();
       if (persist) {
         try {
@@ -214,104 +118,16 @@
       }
     };
 
-    var hintEl = null;
-    var immersiveRegions = document.querySelectorAll(
-      ".skip-link, #navbar, main, .site-footer"
-    );
-    var immersiveSpin = document.querySelector(".spin-control");
-    var setImmersive = function (on) {
-      document
-        .querySelectorAll('.palette[data-open="true"]')
-        .forEach(function (openPalette) {
-          openPalette.setAttribute("data-open", "false");
-          var openButton = openPalette.querySelector(".palette-btn");
-          var openPanel = openPalette.querySelector(".palette-panel");
-          if (openButton) openButton.setAttribute("aria-expanded", "false");
-          if (openPanel) openPanel.setAttribute("aria-hidden", "true");
-        });
-      bgRoot.classList.toggle("immersive", on);
-      immersiveRegions.forEach(function (region) {
-        if (on) region.setAttribute("inert", "");
-        else region.removeAttribute("inert");
-      });
-      if (immersiveSpin) {
-        if (on) immersiveSpin.removeAttribute("inert");
-        else immersiveSpin.setAttribute("inert", "");
-      }
-      if (immersiveButton) {
-        immersiveButton.setAttribute("aria-pressed", String(on));
-        immersiveButton.setAttribute(
-          "aria-label",
-          on ? "Exit background view" : "Explore the background"
-        );
-        immersiveButton.title = on
-          ? "Exit background view"
-          : "Explore the background";
-      }
-      var stars = bgRoot.getAttribute("data-bg") !== "galaxy";
-      syncStarsBg();
-      if (spinSync) spinSync();
-      if (on) {
-        if (!hintEl) {
-          hintEl = document.createElement("div");
-          hintEl.className = "bg-immersive-hint";
-          hintEl.setAttribute("role", "status");
-          document.body.appendChild(hintEl);
-        }
-        hintEl.hidden = false;
-        hintEl.textContent = stars
-          ? "Slider spins the star trails \u00b7 Esc or Explore to exit"
-          : "Drag to spin \u00b7 slider sets a steady spin \u00b7 Esc or Explore to exit";
-        hintEl.classList.remove("show");
-        void hintEl.offsetWidth;
-        hintEl.classList.add("show");
-      } else if (hintEl) {
-        hintEl.classList.remove("show");
-        hintEl.hidden = true;
-      }
-    };
-
     applyBgMode(bgRoot.getAttribute("data-bg") || "stars", false);
-    setImmersive(false);
 
     bgButtons.forEach(function (b) {
       b.addEventListener("click", function () {
         var target = b.getAttribute("data-bg-mode");
         if (target !== bgRoot.getAttribute("data-bg")) {
-          setImmersive(false);
           applyBgMode(target, true);
         }
       });
     });
-
-    if (immersiveButton) {
-      immersiveButton.addEventListener("click", function () {
-        setImmersive(!bgRoot.classList.contains("immersive"));
-      });
-    }
-
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && bgRoot.classList.contains("immersive")) {
-        var openPal = document.querySelector('.palette[data-open="true"]');
-        if (openPal) return;
-        setImmersive(false);
-        if (immersiveButton) immersiveButton.focus();
-      }
-    });
-
-    var transferToggle = document.querySelector(".stars-transfer-toggle");
-    if (transferToggle) {
-      transferToggle.checked = transferOn();
-      transferToggle.addEventListener("change", function () {
-        try {
-          localStorage.setItem(
-            "stars-transfer",
-            transferToggle.checked ? "1" : "0"
-          );
-        } catch (e) {}
-        syncStarsBg();
-      });
-    }
   }
 
   var clamp01 = function (n) {
@@ -639,14 +455,14 @@
   if (galaxyPalette) {
     setupPalette(galaxyPalette, {
       presets: {
-        default: { in: "#e39b00", out: "#6432ff" },
+        default: { in: "#38bdf8", out: "#4f46e5" },
         cool: { in: "#2fd6e6", out: "#2a48d8" },
         warm: { in: "#ffb42a", out: "#e6478c" },
         aurora: { in: "#3ce69b", out: "#9a5cff" },
       },
       defaultName: "default",
-      storageName: "galaxy-palette",
-      storageColors: "galaxy-colors",
+      storageName: "galaxy-palette-v2",
+      storageColors: "galaxy-colors-v2",
       apply: function (c) {
         if (window.__bgGalaxy && window.__bgGalaxy.setColors) {
           window.__bgGalaxy.setColors(c.in, c.out);
@@ -659,14 +475,14 @@
   if (starsPalette) {
     setupPalette(starsPalette, {
       presets: {
-        default: { star: "#f2f5f3", bg: "#080b0a" },
+        default: { star: "#dbeafe", bg: "#030712" },
         cool: { star: "#9fd0ff", bg: "#070d1a" },
         warm: { star: "#ffb46b", bg: "#120806" },
         aurora: { star: "#7dffc4", bg: "#04120e" },
       },
       defaultName: "default",
-      storageName: "stars-palette",
-      storageColors: "stars-colors",
+      storageName: "stars-palette-v2",
+      storageColors: "stars-colors-v2",
       apply: function (c) {
         if (window.__bgStars && window.__bgStars.setColors) {
           window.__bgStars.setColors(c.bg, c.star);
@@ -809,23 +625,4 @@
     });
   }
 
-  var spyCard = document.querySelector(".project-card.has-spy");
-  var spyTrigger = spyCard && spyCard.querySelector(".spy-trigger");
-  if (spyCard && spyTrigger) {
-    spyTrigger.addEventListener("click", function () {
-      var on = !spyCard.classList.contains("spy-on");
-      if (on) {
-        spyCard.querySelectorAll("img[data-src]").forEach(function (img) {
-          img.src = img.getAttribute("data-src");
-          img.removeAttribute("data-src");
-        });
-      }
-      spyCard.classList.toggle("spy-on", on);
-      spyTrigger.setAttribute("aria-pressed", String(on));
-      var spyLabel = spyTrigger.querySelector(".spy-trigger-label");
-      if (spyLabel) {
-        spyLabel.textContent = on ? "Hide the disguise" : "Try the disguise";
-      }
-    });
-  }
 })();

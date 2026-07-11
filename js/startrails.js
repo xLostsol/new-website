@@ -40,10 +40,10 @@
       return ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255);
     };
 
-    var bgRGB = "8,11,10";
-    var starRGB = "242,245,243";
+    var bgRGB = "3,7,18";
+    var starRGB = "219,234,254";
     try {
-      var cs = JSON.parse(localStorage.getItem("stars-colors"));
+      var cs = JSON.parse(localStorage.getItem("stars-colors-v2"));
       if (cs) {
         var b = hexToRgbStr(cs.bg);
         var s = hexToRgbStr(cs.star);
