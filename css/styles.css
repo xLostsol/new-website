@@ -36,6 +36,23 @@
   --font-body: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+.home-page {
+  --border-hover: rgba(91, 142, 166, 0.62);
+  --control-border: rgba(126, 169, 188, 0.38);
+  --accent: #78a9bd;
+  --accent-strong: #35657c;
+  --accent-deep: #163e52;
+  --accent-soft: rgba(53, 101, 124, 0.2);
+  --gradient: linear-gradient(135deg, #35657c 0%, #213f5c 100%);
+}
+
+.home-page #space-background {
+  background:
+    radial-gradient(55% 45% at 18% 18%, rgba(53, 101, 124, 0.22), transparent 65%),
+    radial-gradient(45% 40% at 82% 72%, rgba(33, 63, 92, 0.17), transparent 68%),
+    var(--bg);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -1070,39 +1087,6 @@ html[data-bg="galaxy"] .highlight-action {
   flex-wrap: wrap;
   gap: 0.7rem;
   min-width: 0;
-}
-
-.copy-email-button {
-  min-height: 2rem;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid var(--control-border);
-  border-radius: var(--radius-pill);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent),
-    rgba(8, 25, 52, 0.68);
-  color: var(--accent);
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color var(--duration-fast) ease,
-    background var(--duration-fast) ease,
-    border-color var(--duration-fast) ease,
-    transform var(--duration-fast) var(--ease-standard);
-}
-
-.copy-email-button:hover,
-.copy-email-button[data-copied="true"] {
-  color: var(--text);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent),
-    rgba(15, 45, 87, 0.82);
-  border-color: var(--border-hover);
-}
-
-.copy-email-button:active {
-  transform: translateY(1px);
 }
 
 .footer-copy {
