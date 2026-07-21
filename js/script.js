@@ -589,8 +589,8 @@
         <p class="palette-title">UI palette</p>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="blue" aria-pressed="true">
-            <span class="swatch-chip" style="background: linear-gradient(135deg, #6ea8dc, #3f76ad);"></span>
-            <span class="swatch-name">Blue</span>
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #3f73c2, #1b4b94);"></span>
+            <span class="swatch-name">Dark blue</span>
           </button>
           <button type="button" class="palette-swatch" data-palette="teal" aria-pressed="false">
             <span class="swatch-chip" style="background: linear-gradient(135deg, #5ca7a4, #367b79);"></span>
@@ -645,7 +645,7 @@
   var uiPalette = createUiPalette();
   setupPalette(uiPalette, {
     presets: {
-      blue: { ui: "#6ea8dc" },
+      blue: { ui: "#3f73c2" },
       teal: { ui: "#5ca7a4" },
       sage: { ui: "#7fa276" },
       amber: { ui: "#c69855" },
@@ -675,11 +675,13 @@
       rootStyle.setProperty("--accent-soft", rgbaString(strong, 0.16));
       rootStyle.setProperty("--accent-soft-hover", rgbaString(strong, 0.26));
       rootStyle.setProperty("--accent-faint", rgbaString(strong, 0.08));
-      rootStyle.setProperty("--accent-bg", rgbaString(strong, 0.2));
-      rootStyle.setProperty("--accent-bg-soft", rgbaString(strong, 0.16));
-      rootStyle.setProperty("--accent-bg-deep", rgbaString(deep, 0.16));
-      rootStyle.setProperty("--accent-bg-deep-soft", rgbaString(deep, 0.13));
-      rootStyle.setProperty("--accent-border-soft", rgbaString(color, 0.2));
+      rootStyle.setProperty("--accent-bg", rgbaString(strong, 0.24));
+      rootStyle.setProperty("--accent-bg-soft", rgbaString(strong, 0.18));
+      rootStyle.setProperty("--accent-bg-deep", rgbaString(deep, 0.18));
+      rootStyle.setProperty("--accent-bg-deep-soft", rgbaString(deep, 0.14));
+      rootStyle.setProperty("--accent-border-soft", rgbaString(color, 0.22));
+      rootStyle.setProperty("--accent-glow", rgbaString(color, 0.32));
+      rootStyle.setProperty("--accent-glow-strong", rgbaString(color, 0.48));
       rootStyle.setProperty("--border", rgbaString(focus, 0.18));
       rootStyle.setProperty("--border-hover", rgbaString(color, 0.54));
       rootStyle.setProperty("--control-border", rgbaString(focus, 0.3));

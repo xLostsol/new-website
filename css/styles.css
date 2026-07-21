@@ -11,26 +11,28 @@
   --surface: rgba(5, 12, 28, 0.84);
   --card: rgba(5, 12, 28, 0.38);
   --card-hover: rgba(7, 18, 37, 0.48);
-  --border: rgba(147, 197, 253, 0.18);
-  --border-hover: rgba(110, 168, 220, 0.54);
-  --control-border: rgba(147, 197, 253, 0.3);
+  --border: rgba(109, 166, 252, 0.18);
+  --border-hover: rgba(63, 115, 194, 0.54);
+  --control-border: rgba(109, 166, 252, 0.3);
   --text: #f4f8ff;
   --text-muted: #b9c8dc;
-  --accent: #6ea8dc;
-  --accent-strong: #4b86bf;
-  --accent-deep: #285f91;
-  --accent-hover: #7ab1df;
-  --accent-gradient-end: #3f76ad;
-  --accent-contrast: #04111f;
-  --accent-soft: rgba(75, 134, 191, 0.16);
-  --accent-soft-hover: rgba(75, 134, 191, 0.26);
-  --accent-faint: rgba(75, 134, 191, 0.08);
-  --accent-bg: rgba(75, 134, 191, 0.2);
-  --accent-bg-soft: rgba(75, 134, 191, 0.16);
-  --accent-bg-deep: rgba(40, 82, 126, 0.16);
-  --accent-bg-deep-soft: rgba(40, 82, 126, 0.13);
-  --accent-border-soft: rgba(110, 168, 220, 0.2);
-  --focus-ring: #93c5fd;
+  --accent: #3f73c2;
+  --accent-strong: #2558a6;
+  --accent-deep: #0d3778;
+  --accent-hover: #4879c5;
+  --accent-gradient-end: #1b4b94;
+  --accent-contrast: #f7fbff;
+  --accent-soft: rgba(37, 88, 166, 0.16);
+  --accent-soft-hover: rgba(37, 88, 166, 0.26);
+  --accent-faint: rgba(37, 88, 166, 0.08);
+  --accent-bg: rgba(37, 88, 166, 0.24);
+  --accent-bg-soft: rgba(37, 88, 166, 0.18);
+  --accent-bg-deep: rgba(13, 55, 120, 0.18);
+  --accent-bg-deep-soft: rgba(13, 55, 120, 0.14);
+  --accent-border-soft: rgba(63, 115, 194, 0.22);
+  --accent-glow: rgba(63, 115, 194, 0.32);
+  --accent-glow-strong: rgba(63, 115, 194, 0.48);
+  --focus-ring: #6da6fc;
   --gradient: linear-gradient(135deg, var(--accent) 0%, var(--accent-gradient-end) 100%);
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -254,6 +256,7 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
 
 .logo span {
   color: var(--accent);
+  text-shadow: 0 0 14px var(--accent-glow-strong);
 }
 
 .nav-links {
@@ -470,10 +473,10 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
   line-height: 1;
   text-decoration: none;
   color: var(--accent-contrast);
-  background: var(--accent);
+  background: var(--gradient);
   border: 1px solid var(--control-border);
   border-bottom-color: var(--accent-deep);
-  box-shadow: none;
+  box-shadow: 0 0 20px var(--accent-glow);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -481,13 +484,14 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
   touch-action: manipulation;
   transition:
     transform var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) ease,
     background var(--duration-fast) ease;
 }
 
 .cta-button:hover {
-  background: var(--accent-hover);
+  background: linear-gradient(135deg, var(--accent-hover), var(--accent-strong));
   transform: translateY(-1px);
-  box-shadow: none;
+  box-shadow: 0 0 28px var(--accent-glow-strong);
 }
 
 .cta-button:active {
@@ -547,6 +551,7 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
   height: 3px;
   border-radius: 2px;
   background: var(--gradient);
+  box-shadow: 0 0 12px var(--accent-glow-strong);
 }
 
 .section-subtitle {
@@ -1177,8 +1182,8 @@ html[data-bg="galaxy"] .highlight-action {
   color: var(--accent-contrast);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 65%),
-    var(--accent);
-  box-shadow: none;
+    var(--gradient);
+  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .bg-toggle-btn:active {
@@ -1315,8 +1320,8 @@ html.immersive[data-bg="stars"] .palette-stars {
 .palette[data-open="true"] .palette-btn {
   opacity: 1;
   color: var(--accent-contrast);
-  background: var(--accent);
-  box-shadow: none;
+  background: var(--gradient);
+  box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .palette-btn svg {
@@ -1413,7 +1418,7 @@ html.immersive[data-bg="stars"] .palette-stars {
 .palette-swatch[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent-soft);
-  box-shadow: none;
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .palette-swatch[aria-pressed="true"] .swatch-name {
