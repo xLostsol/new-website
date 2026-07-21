@@ -138,14 +138,16 @@ h3 {
 }
 
 .stars {
-  display: none;
   position: absolute;
   left: 50%;
   top: 50%;
   width: 150vmax;
   height: 150vmax;
   margin: -75vmax 0 0 -75vmax;
+  opacity: 0;
+  pointer-events: none;
   animation: starfield-rotate 600s linear infinite;
+  transition: opacity var(--duration-slow) ease;
 }
 
 .space-canvas {
@@ -154,8 +156,8 @@ h3 {
   transition: opacity var(--duration-slow) ease;
 }
 
-.stars {
-  transition: opacity var(--duration-slow) ease;
+html[data-bg="stars"] .stars {
+  opacity: 0.72;
 }
 
 html[data-bg="galaxy"] #space-background.has-canvas .stars {
@@ -337,18 +339,35 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
   max-width: 50rem;
 }
 
-.hero-content::before {
+.hero-content::before,
+.hero-content::after {
   content: "";
   position: absolute;
-  inset: -34% -40%;
-  z-index: -1;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse closest-side,
-    rgba(3, 7, 18, 0.94),
-    rgba(3, 7, 18, 0.74) 70%,
-    transparent 100%
-  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: opacity var(--duration-slow) ease;
+}
+
+.hero-content::before {
+  width: min(84vw, 48rem);
+  z-index: -2;
+  background: rgba(3, 10, 28, 0.76);
+}
+
+.hero-content::after {
+  width: min(90vw, 52rem);
+  z-index: -1;
+  border: 1px solid var(--border-hover);
+}
+
+html[data-bg="galaxy"] .home-page .hero-content::before,
+html[data-bg="galaxy"] .home-page .hero-content::after {
+  opacity: 1;
 }
 
 .hero-content > * {
@@ -1859,6 +1878,14 @@ html.js .reveal.visible {
 }
 
 @media (max-width: 768px) {
+  .hero-content::before {
+    width: min(122vw, 34rem);
+  }
+
+  .hero-content::after {
+    width: min(132vw, 37rem);
+  }
+
   .palette {
     top: 0.875rem;
     right: 4.75rem;

@@ -57,20 +57,20 @@
   if (sky) {
     var starLayer = sky.querySelector(".stars") || sky;
     var fragment = document.createDocumentFragment();
-    var STAR_COUNT = window.innerWidth < 768 ? 110 : 150;
+    var STAR_COUNT = window.innerWidth < 768 ? 32 : 48;
 
     for (var i = 0; i < STAR_COUNT; i++) {
       var star = document.createElement("span");
-      star.className = Math.random() < 0.13 ? "star star-bright" : "star";
+      star.className = Math.random() < 0.08 ? "star star-bright" : "star";
 
-      var size = Math.random() * 2 + 0.5;
+      var size = Math.random() * 1.2 + 0.4;
       star.style.width = size + "px";
       star.style.height = size + "px";
       star.style.top = Math.random() * 100 + "%";
       star.style.left = Math.random() * 100 + "%";
       star.style.setProperty(
         "--twinkle-duration",
-        (Math.random() * 8 + 12).toFixed(2) + "s"
+        (Math.random() * 12 + 16).toFixed(2) + "s"
       );
       star.style.setProperty(
         "--twinkle-delay",
@@ -78,7 +78,7 @@
       );
       star.style.setProperty(
         "--star-opacity",
-        (Math.random() * 0.5 + 0.3).toFixed(2)
+        (Math.random() * 0.35 + 0.25).toFixed(2)
       );
 
       fragment.appendChild(star);
