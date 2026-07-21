@@ -44,8 +44,8 @@
   --duration-normal: 220ms;
   --duration-slow: 400ms;
   --nav-height: 4.5rem;
-  --font-display: system-ui, -apple-system, "Segoe UI", Arial, "Space Grotesk", sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", Arial, "Space Grotesk", sans-serif;
+  --font-display: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --font-body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
 }
 
 .home-page #space-background {
@@ -226,8 +226,8 @@ html.stars-transfer:not(.immersive)[data-bg="stars"] #space-background::after {
   right: 0;
   z-index: 1000;
   background: rgba(3, 7, 18, 0.78);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
   border-bottom: 1px solid transparent;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -588,8 +588,8 @@ html[data-bg="galaxy"] .home-page .hero-content::after {
 
 .card {
   background: var(--card);
-  -webkit-backdrop-filter: blur(12px) saturate(125%);
-  backdrop-filter: blur(12px) saturate(125%);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  backdrop-filter: blur(8px) saturate(125%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
@@ -839,8 +839,8 @@ html[data-bg="galaxy"] .home-page .hero-content::after {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: rgba(5, 12, 28, 0.82);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
-  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  backdrop-filter: blur(14px) saturate(145%);
   box-shadow: none;
 }
 
@@ -1878,6 +1878,38 @@ html.js .reveal.visible {
 }
 
 @media (max-width: 768px) {
+  #navbar {
+    background: rgba(3, 7, 18, 0.94);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  #navbar.scrolled {
+    background: rgba(3, 7, 18, 0.96);
+  }
+
+  .card {
+    background: rgba(5, 12, 28, 0.84);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .card:hover {
+    background: rgba(7, 18, 37, 0.9);
+  }
+
+  .home-highlights {
+    background: rgba(5, 12, 28, 0.94);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  html[data-bg="galaxy"] .home-highlights {
+    background:
+      linear-gradient(135deg, var(--accent-faint), transparent 50%),
+      rgba(3, 7, 18, 0.96);
+  }
+
   .hero-content::before {
     width: min(122vw, 34rem);
   }

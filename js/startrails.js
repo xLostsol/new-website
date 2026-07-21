@@ -18,15 +18,26 @@
     var raf = null;
     var last = 0;
     var resizeTimer = null;
-    var listenerRecords = [];
+    var buildListenerController = null;
 
     var SPIN_MAX = 0.5;
     var DEFAULT_PCT = 40;
     var ZOOM_MIN = 0.45;
     var ZOOM_MAX = 3;
+    var LOW_TIER_WIDTH = 768;
 
     var clamp = function (n, lo, hi) {
       return n < lo ? lo : n > hi ? hi : n;
+    };
+
+    var isLowTierDevice = function () {
+      var cores = navigator.hardwareConcurrency || 0;
+      var memory = navigator.deviceMemory || 0;
+      return (
+        window.innerWidth < LOW_TIER_WIDTH ||
+        (cores > 0 && cores <= 4) ||
+        (memory > 0 && memory <= 4)
+      );
     };
 
     var hexToRgbStr = function (hex) {
@@ -61,27 +72,6 @@
       }
     };
 
-    var listen = function (target, type, handler, options) {
-      target.addEventListener(type, handler, options);
-      listenerRecords.push({
-        target: target,
-        type: type,
-        handler: handler,
-        options: options,
-      });
-    };
-
-    var removeBuildListeners = function () {
-      listenerRecords.forEach(function (record) {
-        record.target.removeEventListener(
-          record.type,
-          record.handler,
-          record.options
-        );
-      });
-      listenerRecords = [];
-    };
-
     var spinRate = (DEFAULT_PCT / 100) * SPIN_MAX;
     try {
       var s0 = parseFloat(localStorage.getItem("stars-spin"));
@@ -112,8 +102,8 @@
       stars = [];
       var diag = Math.sqrt(w * w + h * h);
       var Rmax = diag * 0.62;
-      var small = w < 768;
-      var count = small ? 240 : 480;
+      var lowTier = isLowTierDevice();
+      var count = lowTier ? 240 : 480;
       for (var i = 0; i < count; i++) {
         var r = Rmax * Math.sqrt(Math.random());
         var a0 = Math.random() * Math.PI * 2;
@@ -165,24 +155,15 @@
       ctx.fillRect(0, 0, w, h);
 
       ctx.globalCompositeOperation = "lighter";
-      var moving = prevRot !== rotation;
       for (var i = 0; i < stars.length; i++) {
         var st = stars[i];
         var a2 = st.a0 + rotation;
         var rr = st.r * zoom;
-        var style = st.style;
-        if (moving) {
-          ctx.beginPath();
-          ctx.lineWidth = st.size;
-          ctx.strokeStyle = style;
-          ctx.arc(cx, cy, rr, st.a0 + prevRot, a2, rotation < prevRot);
-          ctx.stroke();
-        } else {
-          ctx.beginPath();
-          ctx.fillStyle = style;
-          ctx.arc(cx + rr * Math.cos(a2), cy + rr * Math.sin(a2), st.size * 0.7, 0, 6.2832);
-          ctx.fill();
-        }
+        ctx.beginPath();
+        ctx.lineWidth = st.size;
+        ctx.strokeStyle = st.style;
+        ctx.arc(cx, cy, rr, st.a0 + prevRot, a2, rotation < prevRot);
+        ctx.stroke();
       }
       ctx.globalCompositeOperation = "source-over";
       if (shouldAnimate()) raf = requestAnimationFrame(frame);
@@ -234,21 +215,25 @@
       sky.appendChild(canvas);
       sizeCanvas();
       makeStars();
+      buildListenerController = new AbortController();
 
-      listen(window, "resize", function () {
-        if (!running) return;
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function () {
-          resizeTimer = null;
-          if (!running || !canvas || !ctx) return;
-          sizeCanvas();
-          makeStars();
-          repaint();
-        }, 150);
-      });
+      window.addEventListener(
+        "resize",
+        function () {
+          if (!running) return;
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(function () {
+            resizeTimer = null;
+            if (!running || !canvas || !ctx) return;
+            sizeCanvas();
+            makeStars();
+            repaint();
+          }, 150);
+        },
+        { signal: buildListenerController.signal }
+      );
 
-      listen(
-        window,
+      window.addEventListener(
         "wheel",
         function (e) {
           if (!running) return;
@@ -263,7 +248,7 @@
           } catch (_) {}
           repaint();
         },
-        { passive: false }
+        { passive: false, signal: buildListenerController.signal }
       );
 
       inited = true;
@@ -321,7 +306,8 @@
 
     function dispose() {
       stop();
-      removeBuildListeners();
+      if (buildListenerController) buildListenerController.abort();
+      buildListenerController = null;
       if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
       canvas = null;
       ctx = null;

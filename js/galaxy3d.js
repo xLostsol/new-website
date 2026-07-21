@@ -44,13 +44,17 @@ var Galaxy = (function () {
   var scene = null; // kept at module scope so dispose() can free its resources
   var guRef = null; // reference to the shared uniforms, for live color changes
   var buildPromise = null; // de-dupes the async (Three.js) build
+  var buildPromiseGeneration = 0;
   var startRequested = false; // tracks intent across the async build
   var buildGeneration = 0; // invalidates a pending build before it allocates
   var listenerRecords = [];
+  var listenersActive = false;
+  var resizeTimer = null;
+  var refreshViewport = null;
   var resetInteraction = null;
+  var LOW_TIER_WIDTH = 768;
 
   var listen = function (target, type, handler, options) {
-    target.addEventListener(type, handler, options);
     listenerRecords.push({
       target: target,
       type: type,
@@ -59,7 +63,20 @@ var Galaxy = (function () {
     });
   };
 
+  var registerBuildListeners = function () {
+    if (listenersActive) return;
+    listenerRecords.forEach(function (record) {
+      record.target.addEventListener(
+        record.type,
+        record.handler,
+        record.options
+      );
+    });
+    listenersActive = true;
+  };
+
   var removeBuildListeners = function () {
+    if (!listenersActive) return;
     listenerRecords.forEach(function (record) {
       record.target.removeEventListener(
         record.type,
@@ -67,7 +84,19 @@ var Galaxy = (function () {
         record.options
       );
     });
-    listenerRecords = [];
+    listenersActive = false;
+    clearTimeout(resizeTimer);
+    resizeTimer = null;
+  };
+
+  var isLowTierDevice = function () {
+    var cores = navigator.hardwareConcurrency || 0;
+    var memory = navigator.deviceMemory || 0;
+    return (
+      window.innerWidth < LOW_TIER_WIDTH ||
+      (cores > 0 && cores <= 4) ||
+      (memory > 0 && memory <= 4)
+    );
   };
 
   // Galaxy gradient endpoints (core -> outer edge). The saved palette is read
@@ -99,6 +128,9 @@ var Galaxy = (function () {
   // Heavy one-time setup: only runs the first time the galaxy is shown
   async function build(generation) {
     var THREE;
+    var buildRenderer = null;
+    var buildScene = null;
+    var listenerRecordStart = listenerRecords.length;
     try {
       THREE = await loadThree();
       if (generation !== buildGeneration || !startRequested) return false;
@@ -106,24 +138,23 @@ var Galaxy = (function () {
       // with depthTest:false), so disabling them frees a whole buffer's worth
       // of GPU memory per context. pixelRatio is capped at 1 so a scaled /
       // HiDPI display does not allocate a 2x+ framebuffer for a soft backdrop.
-      renderer = new THREE.WebGLRenderer({
+      buildRenderer = new THREE.WebGLRenderer({
         alpha: true,
         antialias: false,
         depth: false,
         stencil: false,
       });
     } catch (e) {
-      renderer = null;
+      buildRenderer = null;
       return false; // no WebGL: the static starfield stays visible instead
     }
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.domElement.className = "space-canvas";
-    sky.appendChild(renderer.domElement);
-    sky.classList.add("has-canvas");
+    buildRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1));
+    buildRenderer.setSize(window.innerWidth, window.innerHeight);
+    buildRenderer.domElement.className = "space-canvas";
+    sky.appendChild(buildRenderer.domElement);
 
-    scene = new THREE.Scene();
+    buildScene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(
       60,
       window.innerWidth / window.innerHeight,
@@ -141,7 +172,6 @@ var Galaxy = (function () {
       uColorIn: { value: new THREE.Color(colorIn) },
       uColorOut: { value: new THREE.Color(colorOut) },
     };
-    guRef = gu;
 
     var BASE_DIST = 26;
     var coreMaterial;
@@ -196,59 +226,117 @@ var Galaxy = (function () {
     // framing in the render loop instead of snapping
     var lastWidth = window.innerWidth;
     var lastHeight = window.innerHeight;
-    listen(window, "resize", function () {
+    var syncViewport = function () {
       var w = window.innerWidth;
       var h = window.innerHeight;
       if (w === lastWidth && Math.abs(h - lastHeight) < 160) return;
       lastWidth = w;
       lastHeight = h;
-      renderer.setSize(w, h);
+      buildRenderer.setSize(w, h);
       computeTargetDist();
+    };
+    listen(window, "resize", function () {
+      if (invalidateUIRects) invalidateUIRects();
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        resizeTimer = null;
+        if (!running || !buildRenderer) return;
+        syncViewport();
+      }, 150);
     });
 
-    var small = window.innerWidth < 768;
-    var CORE_POINTS = small ? 8000 : 20000;
-    var DISK_POINTS = small ? 16000 : 40000;
+    var lowTier = isLowTierDevice();
+    var CORE_POINTS = lowTier ? 8000 : 20000;
+    var DISK_POINTS = lowTier ? 16000 : 40000;
+    var ATTRIBUTE_CHUNK_SIZE = 4000;
 
-    var makeAttributes = function (count, makePoint) {
-      var pts = [];
-      var sizes = [];
-      var shift = [];
-      for (var i = 0; i < count; i++) {
-        pts.push(makePoint());
-        sizes.push(Math.random() * 1.5 + 0.5);
-        shift.push(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI * 2,
-          (Math.random() * 0.9 + 0.1) * Math.PI * 0.1,
-          Math.random() * 0.9 + 0.1
-        );
+    var buildIsCurrent = function () {
+      return generation === buildGeneration && startRequested;
+    };
+    var nextBuildFrame = function () {
+      return new Promise(function (resolve) {
+        requestAnimationFrame(resolve);
+      });
+    };
+    var discardBuild = function (geometries) {
+      listenerRecords.splice(listenerRecordStart);
+      geometries.forEach(function (geometry) {
+        if (geometry) geometry.dispose();
+      });
+      if (buildRenderer.domElement.parentNode) {
+        buildRenderer.domElement.parentNode.removeChild(buildRenderer.domElement);
       }
-      var geometry = new THREE.BufferGeometry().setFromPoints(pts);
+      buildRenderer.dispose();
+      if (buildRenderer.forceContextLoss) buildRenderer.forceContextLoss();
+      buildRenderer = null;
+      buildScene = null;
+      return false;
+    };
+    var makeAttributes = async function (count, makePoint) {
+      var positions = new Float32Array(count * 3);
+      var sizes = new Float32Array(count);
+      var shifts = new Float32Array(count * 4);
+      for (var start = 0; start < count; start += ATTRIBUTE_CHUNK_SIZE) {
+        var end = Math.min(count, start + ATTRIBUTE_CHUNK_SIZE);
+        for (var i = start; i < end; i++) {
+          var point = makePoint();
+          var positionOffset = i * 3;
+          var shiftOffset = i * 4;
+          positions[positionOffset] = point.x;
+          positions[positionOffset + 1] = point.y;
+          positions[positionOffset + 2] = point.z;
+          sizes[i] = Math.random() * 1.5 + 0.5;
+          shifts[shiftOffset] = Math.random() * Math.PI;
+          shifts[shiftOffset + 1] = Math.random() * Math.PI * 2;
+          shifts[shiftOffset + 2] =
+            (Math.random() * 0.9 + 0.1) * Math.PI * 0.1;
+          shifts[shiftOffset + 3] = Math.random() * 0.9 + 0.1;
+        }
+        if (end < count) {
+          await nextBuildFrame();
+          if (!buildIsCurrent()) return null;
+        }
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3)
+      );
       geometry.setAttribute("sizes", new THREE.Float32BufferAttribute(sizes, 1));
-      geometry.setAttribute("shift", new THREE.Float32BufferAttribute(shift, 4));
+      geometry.setAttribute("shift", new THREE.Float32BufferAttribute(shifts, 4));
       return geometry;
     };
 
-    // Spherical core
-    var coreGeometry = makeAttributes(CORE_POINTS, function () {
-      return new THREE.Vector3()
-        .randomDirection()
-        .multiplyScalar(Math.random() * 0.5 + 9.5);
-    });
-
-    // Wide, thin disk
-    var diskGeometry = makeAttributes(DISK_POINTS, function () {
-      var r = 10;
-      var R = 40;
-      var rand = Math.pow(Math.random(), 1.5);
-      var radius = Math.sqrt(R * R * rand + (1 - rand) * r * r);
-      return new THREE.Vector3().setFromCylindricalCoords(
-        radius,
-        Math.random() * 2 * Math.PI,
-        (Math.random() - 0.5) * 2
-      );
-    });
+    await nextBuildFrame();
+    if (!buildIsCurrent()) return discardBuild([]);
+    var geometries;
+    try {
+      geometries = await Promise.all([
+        makeAttributes(CORE_POINTS, function () {
+          return new THREE.Vector3()
+            .randomDirection()
+            .multiplyScalar(Math.random() * 0.5 + 9.5);
+        }),
+        makeAttributes(DISK_POINTS, function () {
+          var r = 10;
+          var R = 40;
+          var rand = Math.pow(Math.random(), 1.5);
+          var radius = Math.sqrt(R * R * rand + (1 - rand) * r * r);
+          return new THREE.Vector3().setFromCylindricalCoords(
+            radius,
+            Math.random() * 2 * Math.PI,
+            (Math.random() - 0.5) * 2
+          );
+        }),
+      ]);
+    } catch (e) {
+      return discardBuild([]);
+    }
+    if (!buildIsCurrent() || !geometries[0] || !geometries[1]) {
+      return discardBuild(geometries);
+    }
+    var coreGeometry = geometries[0];
+    var diskGeometry = geometries[1];
 
     // Color by radial distance in the disk plane: the dense core keeps the
     // core color while the outer ring leans hard into the edge color. Mapping
@@ -338,9 +426,12 @@ var Galaxy = (function () {
       points.rotation.order = "ZYX";
       points.rotation.z = 0.2;
       points.position.y = -1.5;
-      scene.add(points);
+      buildScene.add(points);
     });
 
+    lastWidth = window.innerWidth;
+    lastHeight = window.innerHeight;
+    buildRenderer.setSize(lastWidth, lastHeight);
     computeTargetDist();
     currentDist = targetDist;
     applyCamera(currentDist);
@@ -400,40 +491,60 @@ var Galaxy = (function () {
     var BASE_PAD = 14;
     var HERO_PAD_X = 80;
     var HERO_PAD_Y = 160;
-    var paletteEl = document.querySelector(".palette");
-    var uiEls = document.querySelectorAll(
-      "#navbar, .content-section, .hero-content, .home-highlights, .not-found, .site-footer, .bg-toggle, .palette, .palette-panel"
-    );
-    var uiPadX = [];
-    var uiPadY = [];
-    for (var p = 0; p < uiEls.length; p++) {
-      var hero = uiEls[p].classList.contains("hero-content");
-      uiPadX.push(hero ? HERO_PAD_X : BASE_PAD);
-      uiPadY.push(hero ? HERO_PAD_Y : BASE_PAD);
-    }
-    var overUI = function (x, y) {
+    var UI_SELECTOR =
+      "#navbar, .content-section, .hero-content, .home-highlights, .not-found, .site-footer, .bg-toggle, .palette, .palette-panel";
+    var uiRects = [];
+    var uiRectsDirty = true;
+    var cacheUIRects = function () {
+      var uiEls = document.querySelectorAll(UI_SELECTOR);
+      uiRects = [];
       for (var i = 0; i < uiEls.length; i++) {
-        // The palette popover only blocks the galaxy while it is open; when
-        // closed it still has a layout box, so skip it to avoid a dead zone.
-        if (
-          uiEls[i].classList.contains("palette-panel") &&
-          (!paletteEl || paletteEl.getAttribute("data-open") !== "true")
-        ) {
+        var el = uiEls[i];
+        var rect = el.getBoundingClientRect();
+        if (!rect.width) continue;
+        var hero = el.classList.contains("hero-content");
+        uiRects.push({
+          rect: rect,
+          padX: hero ? HERO_PAD_X : BASE_PAD,
+          padY: hero ? HERO_PAD_Y : BASE_PAD,
+          palette: el.classList.contains("palette-panel")
+            ? el.closest(".palette")
+            : null,
+        });
+      }
+      uiRectsDirty = false;
+    };
+    var invalidateUIRects = function () {
+      uiRectsDirty = true;
+      cursorDirty = true;
+    };
+    var overUI = function (x, y) {
+      if (uiRectsDirty) cacheUIRects();
+      for (var i = 0; i < uiRects.length; i++) {
+        var entry = uiRects[i];
+        if (entry.palette && entry.palette.getAttribute("data-open") !== "true") {
           continue;
         }
-        var r = uiEls[i].getBoundingClientRect();
-        if (!r.width) continue;
-        var px = uiPadX[i];
-        var py = uiPadY[i];
+        var r = entry.rect;
         if (
-          x >= r.left - px &&
-          x <= r.right + px &&
-          y >= r.top - py &&
-          y <= r.bottom + py
+          x >= r.left - entry.padX &&
+          x <= r.right + entry.padX &&
+          y >= r.top - entry.padY &&
+          y <= r.bottom + entry.padY
         )
           return true;
       }
       return false;
+    };
+    var resolveCursorActivity = function () {
+      if (isImmersive()) {
+        active = true;
+        cursorDirty = false;
+      } else if (cursorDirty) {
+        active = !overUI(mx, my);
+        cursorDirty = false;
+      }
+      return active;
     };
 
     listen(
@@ -501,14 +612,18 @@ var Galaxy = (function () {
 
     // Scroll wheel zooms the galaxy, but only over the open galaxy (or in
     // immersive mode) so the page still scrolls normally while reading.
-    // Unlike pointermove this is a low-frequency cold path, so it measures
-    // directly (one read per wheel tick); must be non-passive to preventDefault.
     listen(
       window,
       "wheel",
       function (e) {
         if (!running || !isGalaxy()) return;
-        if (!isImmersive() && overUI(e.clientX, e.clientY)) return;
+        if (isInteractive(e.target)) return;
+        if (mx !== e.clientX || my !== e.clientY) {
+          mx = e.clientX;
+          my = e.clientY;
+          cursorDirty = true;
+        }
+        if (!isImmersive() && !resolveCursorActivity()) return;
         zoom = Math.max(
           ZOOM_MIN,
           Math.min(ZOOM_MAX, zoom * Math.exp(e.deltaY * 0.0012))
@@ -519,21 +634,29 @@ var Galaxy = (function () {
       { passive: false }
     );
 
-    // UI rects are viewport-relative, so they shift as the page scrolls; flag
-    // a recompute (the loop measures). Passive so it never blocks scrolling.
+    // UI rects are viewport-relative, so scrolling invalidates the cache.
     listen(
       window,
       "scroll",
       function () {
-        cursorDirty = true;
+        invalidateUIRects();
       },
       { passive: true }
     );
 
+    listen(document, "click", function (e) {
+      if (e.target && e.target.closest && e.target.closest(".palette-btn")) {
+        invalidateUIRects();
+      }
+    });
+
     listen(window, "pointerdown", function (e) {
       if (!running || !isGalaxy()) return;
       if (isInteractive(e.target)) return;
-      if (!isImmersive() && overUI(e.clientX, e.clientY)) return;
+      mx = e.clientX;
+      my = e.clientY;
+      cursorDirty = true;
+      if (!isImmersive() && !resolveCursorActivity()) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // Second finger: switch from spin to pinch-zoom (immersive only)
       if (pointers.size >= 2) {
@@ -590,15 +713,9 @@ var Galaxy = (function () {
       gu.time.value = clock.elapsedTime * 0.5 * Math.PI;
 
       // Resolve whether the cursor is over the open galaxy (edges) vs the UI.
-      // The layout read happens here, at most once per frame and only after a
-      // move/scroll, so pointermove/wheel never force synchronous layout. In
-      // immersive mode the UI is hidden, so everything reacts (no measuring).
-      if (imm) {
-        active = true;
-      } else if (cursorDirty) {
-        active = !overUI(mx, my);
-        cursorDirty = false;
-      }
+      // Cached rectangles keep pointermove and wheel from forcing layout. In
+      // immersive mode the UI is hidden, so everything reacts.
+      resolveCursorActivity();
 
       // Push-out / spring-back: pointer motion injects an outward push that
       // always decays, so points shove away from the cursor and then ease
@@ -631,6 +748,15 @@ var Galaxy = (function () {
       renderer.render(scene, camera);
     };
 
+    buildRenderer.render(buildScene, camera);
+    renderer = buildRenderer;
+    scene = buildScene;
+    guRef = gu;
+    refreshViewport = function () {
+      invalidateUIRects();
+      syncViewport();
+    };
+    sky.classList.add("has-canvas");
     inited = true;
     return true;
   }
@@ -641,20 +767,22 @@ var Galaxy = (function () {
   async function start() {
     if (prefersReducedMotion || document.hidden || !sky) return;
     startRequested = true;
-    if (!inited) {
+    while (!inited) {
       if (!buildPromise) {
         buildGeneration++;
+        buildPromiseGeneration = buildGeneration;
         buildPromise = build(buildGeneration);
       }
       var pendingBuild = buildPromise;
+      var pendingGeneration = buildPromiseGeneration;
       var ok = false;
       try {
         ok = await pendingBuild;
       } catch (e) {}
-      if (!ok) {
-        if (buildPromise === pendingBuild) buildPromise = null;
-        return;
-      }
+      if (buildPromise === pendingBuild) buildPromise = null;
+      if (ok) break;
+      if (!startRequested || prefersReducedMotion || document.hidden) return;
+      if (pendingGeneration === buildGeneration) return;
     }
     if (
       startRequested &&
@@ -663,6 +791,8 @@ var Galaxy = (function () {
       renderer &&
       !running
     ) {
+      registerBuildListeners();
+      if (refreshViewport) refreshViewport();
       renderer.setAnimationLoop(loop);
       running = true;
     }
@@ -678,9 +808,10 @@ var Galaxy = (function () {
     startRequested = false;
     if (!inited && buildPromise) {
       buildGeneration++;
-      buildPromise = null;
     }
     haltLoop();
+    removeBuildListeners();
+    if (resetInteraction) resetInteraction();
   }
 
   // Release every GPU resource (geometries, materials, and crucially the WebGL
@@ -691,7 +822,6 @@ var Galaxy = (function () {
   function dispose() {
     startRequested = false;
     buildGeneration++;
-    buildPromise = null;
     haltLoop();
     removeBuildListeners();
     if (resetInteraction) resetInteraction();
@@ -714,6 +844,8 @@ var Galaxy = (function () {
     }
     if (sky) sky.classList.remove("has-canvas");
     guRef = null;
+    refreshViewport = null;
+    listenerRecords = [];
     inited = false;
   }
 

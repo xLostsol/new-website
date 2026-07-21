@@ -29,9 +29,30 @@
     <meta name="twitter:image:alt" content="Joseph Bressani, Computer Engineering and Data Solutions" />
     <link rel="canonical" href="https://joseph.jbressani.org/education.html" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="css/styles.css?v=40" />
+    <link rel="stylesheet" href="css/styles.css?v=41" />
     <script>
-      (function () { var d = document.documentElement; d.classList.add("js"); try { d.setAttribute("data-bg", localStorage.getItem("bg-mode") === "galaxy" ? "galaxy" : "stars"); } catch (e) { d.setAttribute("data-bg", "stars"); } })();
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        try {
+          var galaxy = localStorage.getItem("bg-mode") === "galaxy";
+          d.setAttribute("data-bg", galaxy ? "galaxy" : "stars");
+          if (galaxy) {
+            var stylesheet = document.querySelector('link[rel="stylesheet"]');
+            var stylesheetHref = stylesheet
+              ? stylesheet.getAttribute("href") || ""
+              : "";
+            var preload = document.createElement("link");
+            preload.rel = "modulepreload";
+            preload.href =
+              (stylesheetHref.charAt(0) === "/" ? "/" : "") +
+              "js/vendor/three.module.min.js?v=136";
+            document.head.appendChild(preload);
+          }
+        } catch (e) {
+          d.setAttribute("data-bg", "stars");
+        }
+      })();
     </script>
   </head>
   <body>
@@ -369,8 +390,8 @@
       </div>
     </footer>
 
-    <script src="js/startrails.js?v=10" defer></script>
-    <script src="js/script.js?v=27" defer></script>
-    <script type="module" src="js/galaxy3d.js?v=22"></script>
+    <script src="js/startrails.js?v=11" defer></script>
+    <script src="js/script.js?v=28" defer></script>
+    <script type="module" src="js/galaxy3d.js?v=23"></script>
   </body>
 </html>

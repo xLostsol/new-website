@@ -54,7 +54,10 @@
   }
 
   var sky = document.getElementById("space-background");
-  if (sky) {
+  var twinkleStarsBuilt = false;
+  var buildTwinkleStars = function () {
+    if (!sky || twinkleStarsBuilt) return;
+    twinkleStarsBuilt = true;
     var starLayer = sky.querySelector(".stars") || sky;
     var fragment = document.createDocumentFragment();
     var STAR_COUNT = window.innerWidth < 768 ? 32 : 48;
@@ -85,7 +88,7 @@
     }
 
     starLayer.appendChild(fragment);
-  }
+  };
 
   var yearEl = document.getElementById("year");
   if (yearEl) {
@@ -169,6 +172,7 @@
 
     var applyBgMode = function (mode, persist) {
       mode = mode === "galaxy" ? "galaxy" : "stars";
+      if (mode === "stars") buildTwinkleStars();
       if (mode !== "galaxy") setImmersive(false, false);
       bgRoot.setAttribute("data-bg", mode);
       bgButtons.forEach(function (b) {
@@ -321,8 +325,14 @@
     var targets = palette.querySelectorAll(".custom-target");
 
     var targetKeys = [];
+    var targetChips = [];
     targets.forEach(function (b) {
-      targetKeys.push(b.getAttribute("data-target"));
+      var targetKey = b.getAttribute("data-target");
+      targetKeys.push(targetKey);
+      targetChips.push({
+        key: targetKey,
+        element: b.querySelector(".custom-target-chip"),
+      });
     });
     var activeTarget = targetKeys[0];
 
@@ -382,10 +392,9 @@
       if (hexInput && !skipHex) {
         hexInput.value = hexOf(activeTarget).slice(1).toUpperCase();
       }
-      targets.forEach(function (b) {
-        var chip = b.querySelector(".custom-target-chip");
-        if (chip) {
-          chip.style.backgroundColor = hexOf(b.getAttribute("data-target"));
+      targetChips.forEach(function (targetChip) {
+        if (targetChip.element) {
+          targetChip.element.style.backgroundColor = hexOf(targetChip.key);
         }
       });
     };
@@ -476,16 +485,41 @@
 
     if (sv) {
       var svDragging = false;
-      var svPick = function (e) {
-        var r = sv.getBoundingClientRect();
+      var svRect = null;
+      var svFrame = null;
+      var svPoint = null;
+      var applySvPick = function () {
+        svFrame = null;
+        if (!svPoint) return;
+        var point = svPoint;
+        svPoint = null;
+        var r = svRect || sv.getBoundingClientRect();
+        svRect = r;
         if (!r.width || !r.height) return;
-        endpoints[activeTarget].s = clamp01((e.clientX - r.left) / r.width);
-        endpoints[activeTarget].v = 1 - clamp01((e.clientY - r.top) / r.height);
+        endpoints[activeTarget].s = clamp01((point.x - r.left) / r.width);
+        endpoints[activeTarget].v = 1 - clamp01((point.y - r.top) / r.height);
         renderPicker();
         applyLive();
       };
+      var svPick = function (e) {
+        svPoint = { x: e.clientX, y: e.clientY };
+        if (svFrame === null) {
+          svFrame = requestAnimationFrame(applySvPick);
+        }
+      };
+      var flushSvPick = function () {
+        if (svFrame !== null) {
+          cancelAnimationFrame(svFrame);
+          svFrame = null;
+        }
+        applySvPick();
+      };
+      window.addEventListener("resize", function () {
+        svRect = null;
+      });
       sv.addEventListener("pointerdown", function (e) {
         svDragging = true;
+        svRect = sv.getBoundingClientRect();
         try {
           sv.setPointerCapture(e.pointerId);
         } catch (_) {}
@@ -501,6 +535,7 @@
       var svEnd = function (e) {
         if (!svDragging) return;
         svDragging = false;
+        flushSvPick();
         try {
           sv.releasePointerCapture(e.pointerId);
         } catch (_) {}
@@ -567,9 +602,11 @@
         if (paletteBtn) paletteBtn.focus();
       }
     });
+
+    return { setOpen: setOpen };
   };
 
-  var createUiPalette = function () {
+  var createUiPaletteToggle = function () {
     var palette = document.createElement("div");
     palette.className = "palette palette-ui";
     palette.setAttribute("data-open", "false");
@@ -584,8 +621,15 @@
         title="UI palette"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 4.5 5 5"/><path d="m4 20 4.2-1 10.6-10.6a2.12 2.12 0 0 0-3-3L5.2 16Z"/><path d="m5.2 16 2.8 2.8"/></svg>
-      </button>
-      <div class="palette-panel" id="palette-ui-panel" role="dialog" aria-label="UI palette" aria-hidden="true">
+      </button>`;
+    document.body.appendChild(palette);
+    return palette;
+  };
+
+  var createUiPalette = function (palette) {
+    palette.insertAdjacentHTML(
+      "beforeend",
+      `<div class="palette-panel" id="palette-ui-panel" role="dialog" aria-label="UI palette" aria-hidden="true">
         <p class="palette-title">UI palette</p>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="blue" aria-pressed="true">
@@ -637,57 +681,78 @@
             </div>
           </div>
         </div>
-      </div>`;
-    document.body.appendChild(palette);
-    return palette;
+      </div>`
+    );
   };
 
-  var uiPalette = createUiPalette();
-  setupPalette(uiPalette, {
-    presets: {
-      blue: { ui: "#314fbd" },
-      teal: { ui: "#5ca7a4" },
-      sage: { ui: "#7fa276" },
-      amber: { ui: "#c69855" },
-    },
-    defaultName: "blue",
-    storageName: "ui-palette-v1",
-    storageColors: "ui-colors-v1",
-    apply: function (c) {
-      var color = c.ui;
-      var strong = toneHex(color, 0.1, -0.11);
-      var deep = toneHex(color, 0.22, -0.29);
-      var gradientEnd = toneHex(color, 0.14, -0.18);
-      var hover = toneHex(color, -0.04, 0.01);
-      var base = hexToHsv(color);
-      var focus = hsvToHex(base.h, base.s * 0.84, Math.max(base.v, 0.99));
-      var rootStyle = document.documentElement.style;
+  var UI_PALETTE_PRESETS = {
+    blue: { ui: "#314fbd" },
+    teal: { ui: "#5ca7a4" },
+    sage: { ui: "#7fa276" },
+    amber: { ui: "#c69855" },
+  };
+  var applyUiColors = function (c) {
+    var color = c.ui;
+    var strong = toneHex(color, 0.1, -0.11);
+    var deep = toneHex(color, 0.22, -0.29);
+    var gradientEnd = toneHex(color, 0.14, -0.18);
+    var hover = toneHex(color, -0.04, 0.01);
+    var base = hexToHsv(color);
+    var focus = hsvToHex(base.h, base.s * 0.84, Math.max(base.v, 0.99));
+    var rootStyle = document.documentElement.style;
 
-      rootStyle.setProperty("--accent", color);
-      rootStyle.setProperty("--accent-strong", strong);
-      rootStyle.setProperty("--accent-deep", deep);
-      rootStyle.setProperty("--accent-hover", hover);
-      rootStyle.setProperty("--accent-gradient-end", gradientEnd);
-      rootStyle.setProperty(
-        "--accent-contrast",
-        colorLuminance(color) > 0.18 ? "#04111f" : "#f7fbff"
-      );
-      rootStyle.setProperty("--accent-soft", rgbaString(strong, 0.16));
-      rootStyle.setProperty("--accent-soft-hover", rgbaString(strong, 0.26));
-      rootStyle.setProperty("--accent-faint", rgbaString(strong, 0.08));
-      rootStyle.setProperty("--accent-bg", rgbaString(strong, 0.24));
-      rootStyle.setProperty("--accent-bg-soft", rgbaString(strong, 0.18));
-      rootStyle.setProperty("--accent-bg-deep", rgbaString(deep, 0.18));
-      rootStyle.setProperty("--accent-bg-deep-soft", rgbaString(deep, 0.14));
-      rootStyle.setProperty("--accent-border-soft", rgbaString(color, 0.22));
-      rootStyle.setProperty("--accent-glow", rgbaString(color, 0.32));
-      rootStyle.setProperty("--accent-glow-strong", rgbaString(color, 0.48));
-      rootStyle.setProperty("--border", rgbaString(focus, 0.18));
-      rootStyle.setProperty("--border-hover", rgbaString(color, 0.54));
-      rootStyle.setProperty("--control-border", rgbaString(focus, 0.3));
-      rootStyle.setProperty("--focus-ring", focus);
-    },
-  });
+    rootStyle.setProperty("--accent", color);
+    rootStyle.setProperty("--accent-strong", strong);
+    rootStyle.setProperty("--accent-deep", deep);
+    rootStyle.setProperty("--accent-hover", hover);
+    rootStyle.setProperty("--accent-gradient-end", gradientEnd);
+    rootStyle.setProperty(
+      "--accent-contrast",
+      colorLuminance(color) > 0.18 ? "#04111f" : "#f7fbff"
+    );
+    rootStyle.setProperty("--accent-soft", rgbaString(strong, 0.16));
+    rootStyle.setProperty("--accent-soft-hover", rgbaString(strong, 0.26));
+    rootStyle.setProperty("--accent-faint", rgbaString(strong, 0.08));
+    rootStyle.setProperty("--accent-bg", rgbaString(strong, 0.24));
+    rootStyle.setProperty("--accent-bg-soft", rgbaString(strong, 0.18));
+    rootStyle.setProperty("--accent-bg-deep", rgbaString(deep, 0.18));
+    rootStyle.setProperty("--accent-bg-deep-soft", rgbaString(deep, 0.14));
+    rootStyle.setProperty("--accent-border-soft", rgbaString(color, 0.22));
+    rootStyle.setProperty("--accent-glow", rgbaString(color, 0.32));
+    rootStyle.setProperty("--accent-glow-strong", rgbaString(color, 0.48));
+    rootStyle.setProperty("--border", rgbaString(focus, 0.18));
+    rootStyle.setProperty("--border-hover", rgbaString(color, 0.54));
+    rootStyle.setProperty("--control-border", rgbaString(focus, 0.3));
+    rootStyle.setProperty("--focus-ring", focus);
+  };
+  var initialUiColors = UI_PALETTE_PRESETS.blue;
+  try {
+    var initialUiName = localStorage.getItem("ui-palette-v1");
+    if (initialUiName === "custom") {
+      var customUiColors = JSON.parse(localStorage.getItem("ui-colors-v1"));
+      if (customUiColors && customUiColors.ui) initialUiColors = customUiColors;
+    } else if (UI_PALETTE_PRESETS[initialUiName]) {
+      initialUiColors = UI_PALETTE_PRESETS[initialUiName];
+    }
+  } catch (e) {}
+  applyUiColors(initialUiColors);
+
+  var uiPalette = createUiPaletteToggle();
+  var uiPaletteButton = uiPalette.querySelector(".palette-btn");
+  var initializeUiPalette = function (event) {
+    event.stopPropagation();
+    uiPaletteButton.removeEventListener("click", initializeUiPalette);
+    createUiPalette(uiPalette);
+    var uiPaletteApi = setupPalette(uiPalette, {
+      presets: UI_PALETTE_PRESETS,
+      defaultName: "blue",
+      storageName: "ui-palette-v1",
+      storageColors: "ui-colors-v1",
+      apply: applyUiColors,
+    });
+    uiPaletteApi.setOpen(true);
+  };
+  uiPaletteButton.addEventListener("click", initializeUiPalette);
 
   var galaxyPalette = document.querySelector(".palette-galaxy");
   if (galaxyPalette) {
