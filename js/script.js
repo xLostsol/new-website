@@ -589,7 +589,7 @@
         <p class="palette-title">UI palette</p>
         <div class="palette-presets">
           <button type="button" class="palette-swatch" data-palette="blue" aria-pressed="true">
-            <span class="swatch-chip" style="background: linear-gradient(135deg, #3f73c2, #1b4b94);"></span>
+            <span class="swatch-chip" style="background: linear-gradient(135deg, #314fbd, #112c8f);"></span>
             <span class="swatch-name">Dark blue</span>
           </button>
           <button type="button" class="palette-swatch" data-palette="teal" aria-pressed="false">
@@ -645,7 +645,7 @@
   var uiPalette = createUiPalette();
   setupPalette(uiPalette, {
     presets: {
-      blue: { ui: "#3f73c2" },
+      blue: { ui: "#314fbd" },
       teal: { ui: "#5ca7a4" },
       sage: { ui: "#7fa276" },
       amber: { ui: "#c69855" },
