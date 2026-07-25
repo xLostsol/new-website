@@ -29,7 +29,7 @@
     <meta name="twitter:image:alt" content="Joseph Bressani, Computer Engineering and Data Solutions" />
     <link rel="canonical" href="https://joseph.jbressani.org/projects.html" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="css/styles.css?v=41" />
+    <link rel="stylesheet" href="css/styles.css?v=43" />
     <script>
       (function () {
         var d = document.documentElement;
@@ -113,11 +113,14 @@
                 <p>
                   Sky Slam is a multiplayer Roblox game published under the
                   Ember Games studio. It uses a modular, strictly typed Luau
-                  codebase and a reactive UI framework for desktop and mobile.
-                  The game handles game-state synchronization, real-time data
-                  updates, and leaderboard tracking. Claude and Codex were
-                  connected to Roblox Studio through MCP servers to accelerate
-                  development.
+                  codebase with typed interfaces between game systems, so type
+                  errors surface at authoring time rather than at runtime. A
+                  reactive UI framework covers desktop and mobile, handling
+                  game-state synchronization, real-time data updates, and
+                  leaderboard tracking. Claude and Codex were connected to
+                  Roblox Studio through MCP servers for in-editor script
+                  generation and automated review against the project's type
+                  definitions.
                 </p>
                 <div class="project-tech">
                   <span class="tech-tag">Roblox Studio</span>
@@ -155,15 +158,22 @@
                 <h2>Homelab infrastructure</h2>
               </div>
               <p>
-                I designed and built a homelab for virtualization and server
-                administration. It runs VMs and containers on Proxmox with
-                secure remote access. Building it involved networking and
-                system administration.
+                A Proxmox host that runs media, game, and network services side
+                by side, each isolated in its own container or VM while sharing
+                one storage pool safely. Nightly backups run automatically and
+                are verified with a full restore. Every inbound port is closed
+                to the internet, so remote access runs over a private Tailscale
+                mesh where each device reaches only what it needs. A Python
+                relay wakes my desktop from my phone over cellular, hardened
+                with dropped privileges, source-address validation, and rate
+                limiting.
               </p>
               <div class="project-tech">
-                <span class="tech-tag">Proxmox</span>
+                <span class="tech-tag">Proxmox VE</span>
+                <span class="tech-tag">LXC</span>
+                <span class="tech-tag">Tailscale/WireGuard</span>
+                <span class="tech-tag">Python</span>
                 <span class="tech-tag">Ubuntu Server</span>
-                <span class="tech-tag">Virtualization</span>
                 <span class="tech-tag">Networking</span>
               </div>
             </article>
@@ -407,7 +417,7 @@
     </footer>
 
     <script src="js/startrails.js?v=11" defer></script>
-    <script src="js/script.js?v=28" defer></script>
+    <script src="js/script.js?v=29" defer></script>
     <script type="module" src="js/galaxy3d.js?v=23"></script>
   </body>
 </html>
