@@ -127,17 +127,14 @@ p { text-wrap: pretty; }
 .education-line { display: flex; gap: 22px; align-items: center; margin-block: 28px 12px; font-size: .8125rem; }
 .education-line strong { font-size: 1.8rem; font-weight: 500; }
 .site-footer { background: #141c25; border-top: 1px solid var(--line); margin-top: 24px; }
-.footer-top { display: flex; justify-content: space-between; gap: 32px; align-items: center; padding-block: 40px; }
-.footer-top .eyebrow { color: var(--muted); margin-bottom: 10px; }
-.footer-email { font-size: clamp(1rem, 2.2vw, 1.5rem); font-weight: 500; letter-spacing: -.03em; text-decoration: none; overflow-wrap: anywhere; }
+.footer-top { display: flex; justify-content: flex-end; gap: 32px; align-items: flex-start; padding-block: 24px 14px; }
 
 
-.footer-social { display: flex; gap: 26px; flex-shrink: 0; font-size: .875rem; }
+.footer-social { display: flex; gap: 26px; flex-shrink: 0; font-size: .875rem; margin-top: 16px; }
 .footer-social a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 .footer-social a:hover { text-decoration: underline; }
-.footer-bottom { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid var(--line); padding-block: 20px; color: var(--muted); font-size: .75rem; }
-.footer-bottom a { text-decoration: none; }
-.footer-bottom a:hover { text-decoration: underline; }
+.footer-bottom { position: relative; display: flex; justify-content: space-between; gap: 16px; padding-block: 14px; color: var(--muted); font-size: .75rem; }
+.footer-bottom::before { content: ''; position: absolute; top: 0; left: 24px; right: 24px; border-top: 1px solid var(--line); }
 .page-intro { padding-block: 70px 56px; }
 .page-intro > .eyebrow { color: var(--muted); margin-bottom: 21px; }
 .page-lead { margin-top: 25px; font-size: clamp(1.125rem, 2vw, 1.3rem); line-height: 1.65; color: var(--muted); max-width: 720px; }
@@ -287,11 +284,9 @@ figcaption { margin-top: 12px; font-size: .8125rem; color: var(--muted); }
   .current-work h2 { font-size: 1.75rem; }
   .about-summary { grid-template-columns: 1fr; gap: 28px; }
   .about-summary h2 br { display: none; }
-  .footer-top { flex-direction: column; align-items: start; gap: 20px; padding-block: 30px 24px; }
-  .footer-social { gap: 30px; }
-  .footer-email { font-size: 1.125rem; }
+  .footer-top { flex-direction: column; align-items: start; gap: 12px; padding-block: 24px 12px; }
+  .footer-social { gap: 30px; margin-top: 0; }
   .footer-bottom { flex-wrap: wrap; font-size: .75rem; }
-  .footer-bottom > a { flex: 1 1 100%; padding-block: 5px; }
   .page-intro { padding-block: 46px 38px; }
   .page-intro h1 { font-size: clamp(2.6rem, 9vw, 4rem); }
   .page-lead { font-size: 1.125rem; }
