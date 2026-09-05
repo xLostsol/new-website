@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://joseph.jbressani.org/</loc>
-  </url>
-  <url>
-    <loc>https://joseph.jbressani.org/experience.html</loc>
-  </url>
-  <url>
-    <loc>https://joseph.jbressani.org/projects.html</loc>
-  </url>
-  <url>
-    <loc>https://joseph.jbressani.org/education.html</loc>
-  </url>
-  <url>
-    <loc>https://joseph.jbressani.org/contact.html</loc>
-  </url>
+  <url><loc>https://joseph.jbressani.org/</loc></url>
+  <url><loc>https://joseph.jbressani.org/projects.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/experience.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/education.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/contact.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/sky-slam.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/homelab.html</loc></url>
+  <url><loc>https://joseph.jbressani.org/capstone.html</loc></url>
 </urlset>

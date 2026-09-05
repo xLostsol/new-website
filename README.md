@@ -1,37 +1,44 @@
 # joseph.jbressani.org
 
-Personal portfolio website for Joseph Bressani, a Computer Engineering student
-at the University of South Florida and Data Solutions Intern at DTCC.
+Joseph Bressani's portfolio: Computer Engineering at USF, a completed DTCC Data
+Solutions internship, and projects in infrastructure, multiplayer software,
+and a Microsoft-sponsored student capstone.
 
-Built with vanilla HTML, CSS, and JavaScript. Hosted on GitHub Pages with a
-custom domain.
+Dark by default, with system typography, restrained blue accents, project case
+studies, direct contact links, and a downloadable resume. The site remains
+static HTML, CSS, and JavaScript, hosted on GitHub Pages with its existing domain.
 
-## Pages
+## Editing and checking
 
-- `index.html`: Home with current-work and featured-project highlights
-- `experience.html`: Work experience
-- `projects.html`: Selected projects
-- `education.html`: Education and technical skills
-- `contact.html`: Contact links
-- `404.html`: Custom not-found page
-- `robots.txt` and `sitemap.xml`: Search-engine discovery files
+Edit page content in `site/pages/` and the shared shell in `site/layout.html`.
+Run these commands with Node.js (no npm dependencies or install required):
 
-## Features
+```sh
+npm run build
+npm run check
+```
 
-- Responsive layout with a mobile hamburger navigation
-- Two user-controlled background modes: stars and a Three.js galaxy
-- Custom galaxy color palettes
-- Social preview metadata and a custom Open Graph image
-- Display-only email with a copy control
-- Locally hosted Space Grotesk and a lazily loaded, pinned Three.js module
-- Respects `prefers-reduced-motion`
-- No build step, just static files
+The build generates the root HTML pages and sitemap, with content hashes on
+shared CSS and JavaScript URLs. Include generated files when publishing to the
+existing GitHub Pages setup. Do not edit generated HTML directly.
 
-Third-party source, version, hash, and license details are recorded in
-`THIRD_PARTY_NOTICES.md`.
+Serve the repository root to preview:
 
-## Local development
+```sh
+python -m http.server 4173 --bind 127.0.0.1
+```
 
-Serve the repository root with any static file server. Root-relative routes are
-used for canonical home and favicon URLs, so `file://` previews are not
-supported.
+Open `http://127.0.0.1:4173/`. Root-relative links require an HTTP server.
+The check command verifies local routes, anchors, metadata, and resume access.
+For visual changes, also check desktop/mobile layouts and keyboard interactions.
+
+## Pages and assets
+
+- Home, Work, Experience, About (`education.html`), and Contact preserve existing routes.
+- Homelab, Sky Slam, and Capstone have dedicated case studies.
+- `assets/Joseph-Bressani-Resume.pdf` is the supplied resume, unchanged.
+- The Sky Slam cover uses an optimized WebP image and is labeled as promotional
+  artwork. The homelab diagram is a logical overview.
+
+Local audit records, planning notes, and optional tooling are kept in the ignored
+`Storage/` folder and are not required to build or publish the site.

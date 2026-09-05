@@ -2,113 +2,56 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Page not found | Joseph Bressani</title>
-    <meta
-      name="description"
-      content="That page could not be found. Return to Joseph Bressani's portfolio."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Page not found — Joseph Bressani</title>
+    <meta name="description" content="Find your way back to Joseph Bressani’s portfolio." />
+    <meta name="theme-color" content="#10151b" />
+    <link rel="canonical" href="https://joseph.jbressani.org/404.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Joseph Bressani" />
+    <meta property="og:title" content="Page not found — Joseph Bressani" />
+    <meta property="og:description" content="Find your way back to Joseph Bressani’s portfolio." />
+    <meta property="og:url" content="https://joseph.jbressani.org/404.html" />
+    <meta property="og:image" content="https://joseph.jbressani.org/assets/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Joseph Bressani — Computer Engineering, Software & Infrastructure" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Page not found — Joseph Bressani" />
+    <meta name="twitter:description" content="Find your way back to Joseph Bressani’s portfolio." />
+    <meta name="twitter:image" content="https://joseph.jbressani.org/assets/og.jpg" />
+    <meta name="twitter:image:alt" content="Joseph Bressani — Computer Engineering, Software & Infrastructure" />
     <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#030712" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/css/styles.css?v=43" />
-    <script>
-      (function () {
-        var d = document.documentElement;
-        d.classList.add("js");
-        try {
-          var galaxy = localStorage.getItem("bg-mode") === "galaxy";
-          d.setAttribute("data-bg", galaxy ? "galaxy" : "stars");
-          if (galaxy) {
-            var stylesheet = document.querySelector('link[rel="stylesheet"]');
-            var stylesheetHref = stylesheet
-              ? stylesheet.getAttribute("href") || ""
-              : "";
-            var preload = document.createElement("link");
-            preload.rel = "modulepreload";
-            preload.href =
-              (stylesheetHref.charAt(0) === "/" ? "/" : "") +
-              "js/vendor/three.module.min.js?v=136";
-            document.head.appendChild(preload);
-          }
-        } catch (e) {
-          d.setAttribute("data-bg", "stars");
-        }
-      })();
-    </script>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/styles.css?v=64e6f41cad" />
+    <script src="/js/script.js?v=d60aecb4bb" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <div id="space-background" aria-hidden="true">
-      <div class="stars"></div>
-    </div>
-
-    <header id="navbar">
-      <nav class="nav-container" aria-label="Primary">
-        <a href="/" class="logo">JB<span>.</span></a>
-        <button
-          class="nav-toggle"
-          type="button"
-          aria-expanded="false"
-          aria-controls="nav-menu"
-          aria-label="Toggle navigation"
-        >
-          <span></span><span></span><span></span>
-        </button>
-        <ul id="nav-menu" class="nav-links">
-          <li><a href="/">Home</a></li>
-          <li><a href="/experience.html">Experience</a></li>
-          <li><a href="/projects.html">Projects</a></li>
-          <li><a href="/education.html">Education</a></li>
-          <li><a href="/contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <main id="main" class="not-found">
-      <section aria-labelledby="not-found-title">
-        <p class="eyebrow">404 / off course</p>
-        <h1 id="not-found-title">That page isn't here.</h1>
-        <p>The link may be old, or the address may be off by a character.</p>
-        <div class="cta-buttons">
-          <a href="/" class="cta-button">Go home</a>
-          <a href="/projects.html" class="cta-button secondary">View projects</a>
-        </div>
-      </section>
-    </main>
-
-    <div class="spin-control" role="group" aria-label="Background spin">
-      <button type="button" class="spin-reset" aria-label="Reset spin" title="Reset spin">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
-      </button>
-      <input type="range" class="spin-slider" min="-100" max="100" value="0" step="1" aria-label="Spin speed" />
-    </div>
-
-    <div class="bg-toggle" role="group" aria-label="Background style">
-      <button type="button" class="bg-toggle-btn" data-bg-mode="stars" aria-pressed="true" title="Calm starry background">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 L10.2 5.8 14.5 8 10.2 10.2 8 14.5 5.8 10.2 1.5 8 5.8 5.8 Z"/></svg>
-        <span class="bg-toggle-label">Stars</span>
-      </button>
-      <button type="button" class="bg-toggle-btn" data-bg-mode="galaxy" aria-pressed="false" title="Animated galaxy">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="1.25"/><path d="M9 6.5c2.4-1.2 4.6.6 3.7 3-.6 1.7-2.8 2.8-5.7 2.5"/><path d="M7 9.5c-2.4 1.2-4.6-.6-3.7-3 .6-1.7 2.8-2.8 5.7-2.5"/></svg>
-        <span class="bg-toggle-label">Galaxy</span>
-      </button>
-    </div>
-
-    <footer class="site-footer">
-      <div class="footer-inner">
-        <div class="footer-copy">
-          <p>&copy; <span id="year">2026</span> Joseph Bressani</p>
-        </div>
-        <ul class="footer-links">
-          <li><a href="/projects.html">Projects</a></li>
-          <li><a href="/contact.html">Contact</a></li>
-        </ul>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">JB</span><span>Joseph Bressani<span class="sr-only"> — home</span></span></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" hidden>Menu <span aria-hidden="true">+</span></button>
+        <nav id="primary-navigation" class="navigation" aria-label="Primary">
+          <a href="/projects.html">Work</a>
+<a href="/experience.html">Experience</a>
+<a href="/education.html">About</a>
+<a href="/contact.html">Contact</a>
+          <a class="nav-resume" href="/assets/Joseph-Bressani-Resume.pdf" download>Resume <span aria-hidden="true">↗</span><span class="sr-only"> (PDF download)</span></a>
+        </nav>
       </div>
-    </footer>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="container page-intro not-found"><p class="eyebrow">404 / Page not found</p><h1>A wrong turn<span class="accent">.</span></h1><p class="page-lead">That page isn't here. My work still is.</p><div class="actions"><a class="button button-primary" href="/">Back to home <span aria-hidden="true">↗</span></a><a class="button button-secondary" href="/projects.html">Explore my work</a></div></section>
 
-    <script src="/js/startrails.js?v=11" defer></script>
-    <script src="/js/script.js?v=29" defer></script>
-    <script type="module" src="/js/galaxy3d.js?v=23"></script>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-top">
+        <div><p class="eyebrow">Say hello</p><p class="footer-email">josephbressani1117@gmail.com</p></div>
+        <div class="footer-social"><a href="https://github.com/xLostsol">GitHub ↗</a><a href="https://www.linkedin.com/in/joseph-bressani-0369a224a/">LinkedIn ↗</a></div>
+      </div>
+      <div class="container footer-bottom"><span>© <span data-year>2026</span> Joseph Bressani</span><span>Tampa, Florida</span></div>
+    </footer>
   </body>
 </html>
