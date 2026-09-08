@@ -4,8 +4,12 @@ Joseph Bressani's portfolio: Computer Engineering at USF, a completed DTCC Data
 Solutions internship, and projects in infrastructure, multiplayer software,
 and a Microsoft-sponsored student capstone.
 
-Dark by default, with system typography, restrained blue accents, project case
-studies, direct contact links, and a downloadable resume. The site remains
+Dark by default, with an open resume-inspired homepage, restrained blue accents, project
+case studies, profile links, and a downloadable resume. Entries offer animated
+previews on hover or keyboard focus, plus Preview buttons for touch. Escape or
+an outside click dismisses a preview; entry links open the full detail pages.
+Section shortcuts navigate the page, while animated skill links lead to relevant
+detail pages. Heading words lift on hover; motion respects reduced-motion preferences. The site remains
 static HTML, CSS, and JavaScript, hosted on GitHub Pages with its existing domain.
 
 ## Editing and checking

@@ -20,6 +20,7 @@ const hash = async file => createHash('sha256').update(await readFile(path.join(
 const layout = await readFile(path.join(root, 'site/layout.html'), 'utf8');
 const cssVersion = await hash('css/styles.css');
 const jsVersion = await hash('js/script.js');
+const resumeAssets = `<link rel="stylesheet" href="/css/resume.css?v=${await hash('css/resume.css')}" /><script src="/js/resume.js?v=${await hash('js/resume.js')}" defer></script>`;
 for (const page of pages) {
   const url = `https://joseph.jbressani.org/${page.file === 'index' ? '' : `${page.file}.html`}`;
   const navigation = [ ['work', '/projects.html', 'Work'], ['experience', '/experience.html', 'Experience'], ['about', '/education.html', 'About'], ['contact', '/contact.html', 'Contact'] ]
@@ -28,6 +29,7 @@ for (const page of pages) {
     TITLE: escape(page.title), DESCRIPTION: escape(page.description), URL: url,
     NAV: navigation, CONTENT: await readFile(path.join(root, `site/pages/${page.file}.html`), 'utf8'),
     CSS_VERSION: cssVersion, JS_VERSION: jsVersion, ROBOTS: page.robots || '',
+    PAGE_ASSETS: page.file === 'index' ? resumeAssets : '',
     STRUCTURED_DATA: page.file === 'index' ? `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Person', name: 'Joseph Bressani', url, description: page.description, affiliation: { '@type': 'CollegeOrUniversity', name: 'University of South Florida' }, sameAs: ['https://github.com/xLostsol', 'https://www.linkedin.com/in/joseph-bressani-0369a224a/'] })}</script>` : ''
   };
   const html = layout.replace(/\{\{([A-Z_]+)\}\}/g, (_, key) => {
