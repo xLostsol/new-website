@@ -4,8 +4,9 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
+const docs = path.join(root, 'docs');
 const names = (await readdir(path.join(root, 'site/pages'))).filter(name => name.endsWith('.html'));
-const documents = new Map(await Promise.all(names.map(async name => [name, await readFile(path.join(root, name), 'utf8')])));
+const documents = new Map(await Promise.all(names.map(async name => [name, await readFile(path.join(docs, name), 'utf8')])));
 let links = 0;
 for (const [name, html] of documents) {
   assert.equal((html.match(/<h1\b/g) || []).length, 1, `${name}: exactly one main heading`);
@@ -19,15 +20,15 @@ for (const [name, html] of documents) {
     if (/^(https?:|mailto:)/.test(raw)) continue;
     const url = new URL(raw, `https://local.test/${name}`);
     const file = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname).slice(1);
-    assert((await stat(path.join(root, file))).isFile(), `${name}: missing ${raw}`);
+    assert((await stat(path.join(docs, file))).isFile(), `${name}: missing ${raw}`);
     if (url.hash) {
-      const target = documents.get(file) || await readFile(path.join(root, file), 'utf8');
+      const target = documents.get(file) || await readFile(path.join(docs, file), 'utf8');
       assert(target.includes(`id="${decodeURIComponent(url.hash.slice(1))}"`), `${name}: broken anchor ${raw}`);
     }
     links++;
   }
 }
-const pdf = await readFile(path.join(root, 'assets/Joseph-Bressani-Resume.pdf'));
+const pdf = await readFile(path.join(docs, 'assets/Joseph-Bressani-Resume.pdf'));
 assert.equal(pdf.subarray(0, 5).toString(), '%PDF-', 'Resume must be a PDF');
 const homepage = documents.get('index.html');
 assert(homepage.includes('3.77') && homepage.includes('May 2027'), 'Homepage education is out of date');
