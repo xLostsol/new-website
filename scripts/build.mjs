@@ -6,14 +6,14 @@ import { createHash } from 'node:crypto';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const docs = path.join(root, 'docs');
 const pages = [
-  { file: 'index', title: 'Joseph Bressani | Software & Infrastructure', description: 'Computer Engineering student at USF, graduating May 2027. Summer 2026 Data Solutions Intern at DTCC, with projects in infrastructure, game development, and AI agents.', active: 'home' },
-  { file: 'projects', title: 'Projects | Joseph Bressani', description: 'A Proxmox homelab, Sky Slam (a published Roblox game), and a Microsoft-sponsored capstone on agentic development.', active: 'projects' },
-  { file: 'experience', title: 'Experience | Joseph Bressani', description: 'Summer 2026 Data Solutions internship at DTCC: Apache Iceberg, Snowflake, AWS S3, and developer tooling.', active: 'experience' },
+  { file: 'index', title: 'Joseph Bressani | Software & Infrastructure', description: 'Computer Engineering student at USF, graduating May 2027. DTCC internship, an AI coding agent benchmark, nine Roblox games, and homelab infrastructure.', active: 'home' },
+  { file: 'projects', title: 'Projects | Joseph Bressani', description: 'An AI coding agent benchmark comparing 65 runs, nine Roblox games including Sky Slam, and a Proxmox homelab.', active: 'projects' },
+  { file: 'experience', title: 'Experience | Joseph Bressani', description: 'Summer 2026 Data Solutions internship at DTCC: a 42-table Apache Iceberg proof of concept, Snowflake, AWS S3, and developer tooling.', active: 'experience' },
   { file: 'education', title: 'About | Joseph Bressani', description: 'Computer Engineering at the University of South Florida. Expected May 2027, 3.77 GPA, and interests in software and infrastructure.', active: 'about' },
   { file: 'contact', title: 'Contact | Joseph Bressani', description: 'Contact Joseph Bressani by email, LinkedIn, or GitHub, and download his resume.', active: 'contact' },
-  { file: 'sky-slam', title: 'Sky Slam | Joseph Bressani', description: 'A published multiplayer Roblox game with strictly typed Luau, reactive UI, and real-time game-state synchronization.', active: 'projects' },
+  { file: 'sky-slam', title: 'Roblox game development | Joseph Bressani', description: 'Nine Roblox games including Sky Slam, built with strictly typed Luau, reactive UI, custom animations, and releases automated through Open Cloud.', active: 'projects' },
   { file: 'homelab', title: 'Homelab infrastructure | Joseph Bressani', description: 'Private remote access, isolated Proxmox services, restore-tested backups, and a hardened Python wake relay.', active: 'projects' },
-  { file: 'capstone', title: 'Microsoft-sponsored capstone | Joseph Bressani', description: 'A Microsoft-sponsored student capstone researching AI agents for coding, testing, review, and deployment.', active: 'projects' },
+  { file: 'capstone', title: 'Microsoft-sponsored capstone | Joseph Bressani', description: 'An AI coding agent benchmark comparing 65 runs across four agents, with 2,300 evidence files, traceable scoring, and sandboxed app replay.', active: 'projects' },
   { file: '404', title: 'Page not found | Joseph Bressani', description: 'Find your way back to Joseph Bressani’s portfolio.', active: '', robots: '<meta name="robots" content="noindex" />' }
 ];
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');

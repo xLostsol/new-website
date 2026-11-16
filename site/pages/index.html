@@ -11,7 +11,7 @@
         <div class="resume-entry-heading"><h3>University of South Florida</h3><span class="resume-date">Expected May 2027</span></div>
         <p class="resume-role">B.S. Computer Engineering</p>
         <p>GPA: 3.77 · Dean’s List (3×)</p>
-        <p>Coursework: FPGA System Design, Computer Architecture</p>
+        <p>Coursework: FPGA System Design, Data Structures</p>
       </article>
     </section>
 
@@ -19,10 +19,9 @@
       <h2 id="resume-skills">Skills</h2>
       <dl class="resume-skills">
         <div><dt>Languages</dt><dd>Python, C/C++, SQL, JavaScript, TypeScript, Luau, Verilog, VHDL</dd></div>
-        <div><dt>Infrastructure</dt><dd>Proxmox VE, Linux, Tailscale/WireGuard, SSH, LXC, ACL policies</dd></div>
+        <div><dt>Infrastructure</dt><dd>Linux, Proxmox VE, LXC, Tailscale/WireGuard, SSH, firewall/ACL policy</dd></div>
         <div><dt>Data &amp; cloud</dt><dd>AWS S3, Snowflake, Apache Iceberg, Collibra</dd></div>
-        <div><dt>Tools</dt><dd>Git, GitHub, Bitbucket, MCP servers, Kiro, Roblox Studio, Claude Code, Codex</dd></div>
-        <div><dt>Methods</dt><dd>Agile/Scrum, Jira</dd></div>
+        <div><dt>Tools</dt><dd>Git, GitHub, Bitbucket, Jira, MCP servers, Kiro, Roblox Studio, Claude Code, Codex</dd></div>
       </dl>
     </section>
 
@@ -32,10 +31,10 @@
         <div class="resume-entry-heading"><h3><a href="/experience.html">DTCC <span aria-hidden="true">→</span></a></h3><span class="resume-date">June – August 2026</span></div>
         <p class="resume-role">Data Solutions Intern · Tampa, Florida</p>
         <ul>
-          <li>Developed an Apache Iceberg proof of concept for Snowflake and AWS S3, demonstrating a 50% reduction in duplicate storage overhead and savings of up to 98% on JSON-heavy datasets.</li>
+          <li>Built an Apache Iceberg proof of concept across Snowflake and AWS S3 spanning 42 tables, cutting duplicate storage overhead 50% and storage cost up to 98% on JSON-heavy datasets.</li>
           <li>Connected a Jira MCP server to Kiro to turn team alignment documents into structured epics and user stories, replacing hand-written tickets.</li>
-          <li>Built a knowledge graph of Iceberg table metadata and lineage, with a chatbot running a 70B-parameter Llama model for exploring table relationships in plain English.</li>
-          <li>Configured and deployed Snowflake MCP servers that streamlined Iceberg table creation, with version control in Bitbucket and governance workflows in Collibra.</li>
+          <li>Created a knowledge graph of Iceberg table metadata and lineage, with a Llama-70B chatbot for tracing table relationships in plain English instead of reading DDL.</li>
+          <li>Deployed Snowflake MCP servers that reduced Iceberg table creation to a single prompted workflow, with version control in Bitbucket and governance registration in Collibra.</li>
         </ul>
       </article>
     </section>
@@ -44,11 +43,19 @@
       <h2 id="resume-projects">Projects</h2>
       <article class="resume-entry">
         <div class="resume-entry-heading"><h3><a href="/capstone.html">Microsoft-sponsored capstone <span aria-hidden="true">→</span></a></h3><span class="resume-date">August 2026 – present</span></div>
-        <p class="resume-role">Student project · Agentic development</p>
+        <p class="resume-role">AI Coding Agent Benchmark · JavaScript, Node.js</p>
         <ul>
-          <li>Researching AI agent architectures, tools, and use cases across the software development lifecycle.</li>
-          <li>Collaborating with a team to design and demonstrate agentic workflows for coding, testing, review, and deployment.</li>
-          <li>Evaluating tradeoffs in security, cost, output quality, and developer experience.</li>
+          <li>Built a benchmark dashboard scoring 65 runs of GitHub Copilot, Claude Code, Codex CLI, and Antigravity, consolidating 2,300 evidence files into one side-by-side comparison.</li>
+          <li>Implemented a five-category scoring engine covering functionality, security, code quality, token use, and human intervention, with every deduction traced to the exact failed check.</li>
+          <li>Created a sandboxed in-browser replay of the original app beside each agent’s version, surfacing API route changes and code diffs; presented results to a Microsoft sponsor.</li>
+        </ul>
+      </article>
+      <article class="resume-entry">
+        <div class="resume-entry-heading"><h3><a href="/sky-slam.html">Roblox game development <span aria-hidden="true">→</span></a></h3><span class="resume-date">March 2026 – present</span></div>
+        <p class="resume-role">9 games · Luau, Roblox Studio, Blender</p>
+        <ul>
+          <li>Built 9 Roblox games in strictly typed Luau with reactive cross-platform UI, real-time game-state synchronization, and custom cutscenes and animations.</li>
+          <li>Integrated Claude and Codex into Roblox Studio and Blender via MCP and automated releases through the Open Cloud API, pushing updates, game passes, and badges without manual dashboard work.</li>
         </ul>
       </article>
       <article class="resume-entry">
@@ -59,14 +66,6 @@
           <li>Closed every inbound port to the internet and moved remote access to a private Tailscale mesh.</li>
           <li>Automated nightly backups and verified them with a full restore.</li>
           <li>Built a hardened Python relay that wakes my desktop from my phone over cellular.</li>
-        </ul>
-      </article>
-      <article class="resume-entry">
-        <div class="resume-entry-heading"><h3><a href="/sky-slam.html">Sky Slam <span aria-hidden="true">→</span></a></h3><span class="resume-date">March – April 2026</span></div>
-        <p class="resume-role">Published Roblox game · Luau</p>
-        <ul>
-          <li>Built a modular, strictly typed Luau codebase with reactive cross-platform UI and real-time game-state synchronization.</li>
-          <li>Integrated Claude and Codex into Roblox Studio via MCP for in-editor generation and type-aware code review.</li>
         </ul>
       </article>
     </section>
